@@ -11,6 +11,13 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version: 0.02	vom: 23.01.2022
+//#
+//#	Implementation:
+//#		-	under development
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version:	 0.01	Date: 21.01.2022
 //#
 //#	Implementation:
@@ -129,15 +136,13 @@ void LncvStorageClass::CheckEEPROM( void )
 		g_clDebugging.PrintStorageDefault();
 #endif
 
-		WriteLNCV( LNCV_ADR_MODULE_ADRESS, 0x0001 );				//	default Module Adress 0x0001
+		WriteLNCV( LNCV_ADR_MODULE_ADDRESS, 0x0001 );				//	default Module Adress 0x0001
 		WriteLNCV( LNCV_ADR_ARTIKEL_NUMMER,	ARTIKEL_NUMMER );		//	Artikel-Nummer
 		WriteLNCV( LNCV_ADR_CONFIGURATION, 0 );						//	default no configuration
 		WriteLNCV( LNCV_ADR_SEND_DELAY, DEFAULT_SEND_DELAY_TIME );	//	Send Delay Timer
 		WriteLNCV( LNCV_ADR_KEY_PERMISSION, 0 );					//	default adr = 0
 		WriteLNCV( LNCV_ADR_KEY_STATE, 0 );							//	default adr = 0
 	}
-	
-	delay( 500 );
 }
 
 
@@ -165,14 +170,12 @@ void LncvStorageClass::Init( void )
 	//	read send delay time
 	//	and make sure it is not shorter than MIN_SEND_DELAY_TIME ms
 	//
-	m_uiSendDelay = ReadLNCV( LNCV_ADR_SEND_DELAY );
+	m_ui16SendDelay = ReadLNCV( LNCV_ADR_SEND_DELAY );
 
-	if( MIN_SEND_DELAY_TIME > m_uiSendDelay )
+	if( MIN_SEND_DELAY_TIME > m_ui16SendDelay )
 	{
-		m_uiSendDelay = MIN_SEND_DELAY_TIME;
+		m_ui16SendDelay = MIN_SEND_DELAY_TIME;
 	}
-
-	delay( 100 );
 }
 
 
@@ -181,7 +184,7 @@ void LncvStorageClass::Init( void )
 //
 bool LncvStorageClass::IsValidLNCVAddress( uint16_t Adresse )
 {
-	if( (LNCV_ADR_MODULE_ADRESS <= Adresse) && (LNCV_ADR_KEY_STATE >= Adresse) )
+	if( (LNCV_ADR_MODULE_ADDRESS <= Adresse) && (LNCV_ADR_KEY_STATE >= Adresse) )
 	{
 		return( true );
 	}

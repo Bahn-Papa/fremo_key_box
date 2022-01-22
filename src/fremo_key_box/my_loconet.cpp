@@ -6,6 +6,13 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version: 0.02	vom: 23.01.2022
+//#
+//#	Implementation:
+//#		-	under development
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version:	 0.01	vom: 21.01.2022
 //#
 //#	Implementation:
@@ -34,7 +41,6 @@
 #endif
 
 #include "my_loconet.h"
-#include "data_pool.h"
 #include "lncv_storage.h"
 
 
@@ -88,6 +94,9 @@ MyLoconetClass::MyLoconetClass()
 //
 void MyLoconetClass::Init( void )
 {
+	m_bIsProgMode			= false;
+	m_bPermissionGranted	= false;
+
 	LocoNet.init( LOCONET_TX_PIN );
 }
 
@@ -98,7 +107,7 @@ void MyLoconetClass::Init( void )
 //	This function will check if a new loconet message is available
 //	and if so will call the desired function to process the message.
 //
-void MyLoconetClass::CheckForMessageAndStoreInDataPool( void )
+void MyLoconetClass::CheckForMessage( void )
 {
 	g_pLnPacket = LocoNet.receive();
 
@@ -118,8 +127,6 @@ void MyLoconetClass::CheckForMessageAndStoreInDataPool( void )
 //	This function checks if the received message is for 'us'.
 //	This is done by checking whether the address of the message
 //	matches the stored address.
-//	If so, the corresponding bit of the 'InState' will be set
-//	according to the info in the message.
 //
 void MyLoconetClass::LoconetReceived( uint16_t adr, uint8_t dir )
 {
@@ -127,11 +134,11 @@ void MyLoconetClass::LoconetReceived( uint16_t adr, uint8_t dir )
 	{
 		if( SWITCH_TO_RED == dir )
 		{
-			g_clDataPool.RemovePermission();
+			m_bPermissionGranted = false;
 		}
 		else
 		{
-			g_clDataPool.SetPermission();
+			m_bPermissionGranted = true;
 		}
 	}
 }
@@ -163,7 +170,7 @@ void MyLoconetClass::SendKeyRemoved( bool bRemoved )
 		LocoNet.requestSwitch( adr, 1, dir );
 
 #ifdef DEBUGGING_PRINTOUT
-		g_clDebugging.PrintReportSwitchMsg( adr, dir );
+//		g_clDebugging.PrintReportSwitchMsg( adr, dir );
 #endif
 
 		//----	wait befor sending the next message  ------
@@ -184,7 +191,7 @@ void MyLoconetClass::SendKeyRemoved( bool bRemoved )
 
 //**********************************************************************
 //
-void notifySwitchRequest( uint16_t Address, uint8_t Output, uint8_t Direction )
+void notifySwitchRequest( uint16_t Address, uint8_t /* Output */, uint8_t Direction )
 {
 #ifdef DEBUGGING_PRINTOUT
 	g_clDebugging.PrintNotifyType( NT_Request );
@@ -196,7 +203,7 @@ void notifySwitchRequest( uint16_t Address, uint8_t Output, uint8_t Direction )
 
 //**********************************************************************
 //
-void notifySwitchReport( uint16_t Address, uint8_t Output, uint8_t Direction )
+void notifySwitchReport( uint16_t Address, uint8_t /* Output */, uint8_t Direction )
 {
 #ifdef DEBUGGING_PRINTOUT
 	g_clDebugging.PrintNotifyType( NT_Report );
@@ -208,7 +215,7 @@ void notifySwitchReport( uint16_t Address, uint8_t Output, uint8_t Direction )
 
 //**********************************************************************
 //
-void notifySwitchState( uint16_t Address, uint8_t Output, uint8_t Direction )
+void notifySwitchState( uint16_t Address, uint8_t /* Output */, uint8_t Direction )
 {
 #ifdef DEBUGGING_PRINTOUT
 	g_clDebugging.PrintNotifyType( NT_State );
@@ -226,10 +233,10 @@ void notifySwitchState( uint16_t Address, uint8_t Output, uint8_t Direction )
 //
 int8_t notifyLNCVdiscover( uint16_t &ArtNr, uint16_t &ModuleAddress )
 {
-	ArtNr			 = g_clLncvStorage.GetArticleNumber();
-	ModuleAddress	 = g_clLncvStorage.GetModuleAddress();
+	ArtNr			= g_clLncvStorage.GetArticleNumber();
+	ModuleAddress	= g_clLncvStorage.GetModuleAddress();
 
-	g_clDataPool.SetProgMode( true );
+	g_clMyLoconet.SetProgMode( true );
 
 #ifdef DEBUGGING_PRINTOUT
 	g_clDebugging.PrintLncvDiscoverStart( false, ArtNr, ModuleAddress  );
@@ -252,7 +259,7 @@ int8_t notifyLNCVprogrammingStart( uint16_t &ArtNr, uint16_t &ModuleAddress )
 		if( 0xFFFF == ModuleAddress )
 		{
 			//----	broadcast, so give Module Address back  --------
-			g_clDataPool.SetProgMode( true );
+			g_clMyLoconet.SetProgMode( true );
 
 			ModuleAddress	= g_clLncvStorage.GetModuleAddress();
 			retval			= LNCV_LACK_OK;
@@ -260,7 +267,7 @@ int8_t notifyLNCVprogrammingStart( uint16_t &ArtNr, uint16_t &ModuleAddress )
 		else if( g_clLncvStorage.GetModuleAddress() == ModuleAddress )
 		{
 			//----  that's for me, so process it  ------------------
-			g_clDataPool.SetProgMode( true );
+			g_clMyLoconet.SetProgMode( true );
 
 			retval	= LNCV_LACK_OK;
 		}
@@ -284,13 +291,13 @@ void notifyLNCVprogrammingStop( uint16_t ArtNr, uint16_t ModuleAddress )
 	g_clDebugging.PrintLncvStop();
 #endif
 
-	if( g_clDataPool.IsProgMode() )
+	if( g_clMyLoconet.IsProgMode() )
 	{
 		if( 	(g_clLncvStorage.GetArticleNumber() == ArtNr)
 			&&	(g_clLncvStorage.GetModuleAddress() == ModuleAddress) )
 		{
 			//----	for me, so switch prog mode off  ---------------
-			g_clDataPool.SetProgMode( false );
+			g_clMyLoconet.SetProgMode( false );
 		}
 	}
 }
@@ -304,7 +311,7 @@ int8_t notifyLNCVread( uint16_t ArtNr, uint16_t Address, uint16_t, uint16_t &Val
 {
 	int8_t retval = -1;		//	default: ignore request
 
-	if( g_clDataPool.IsProgMode() && (g_clLncvStorage.GetArticleNumber() == ArtNr) )
+	if( g_clMyLoconet.IsProgMode() && (g_clLncvStorage.GetArticleNumber() == ArtNr) )
 	{
 		if( g_clLncvStorage.IsValidLNCVAddress( Address ) )
 		{
@@ -333,7 +340,7 @@ int8_t notifyLNCVwrite( uint16_t ArtNr, uint16_t Address, uint16_t Value )
 {
 	int8_t retval = -1;		//	default: ignore request
 
-	if( g_clDataPool.IsProgMode() && (g_clLncvStorage.GetArticleNumber() == ArtNr) )
+	if( g_clMyLoconet.IsProgMode() && (g_clLncvStorage.GetArticleNumber() == ArtNr) )
 	{
 		if( g_clLncvStorage.IsValidLNCVAddress( Address ) )
 		{

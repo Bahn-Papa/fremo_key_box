@@ -9,6 +9,13 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version: 0.02	vom: 23.01.2022
+//#
+//#	Implementation:
+//#		-	under development
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version:	 0.01	vom: 21.01.2022
 //#
 //#	Implementation:
@@ -49,9 +56,28 @@ class MyLoconetClass
 		MyLoconetClass();
 
 		void Init( void );
-		void CheckForMessageAndStoreInDataPool( void );
+		void CheckForMessage( void );
 		void LoconetReceived( uint16_t adr, uint8_t dir );
 		void SendKeyRemoved( bool bRemoved );
+
+		inline void SetProgMode( bool bMode )
+		{
+			m_bIsProgMode = bMode;
+		};
+
+		inline bool IsProgMode( void )
+		{
+			return( m_bIsProgMode );
+		};
+
+		inline bool IsPermissionGranted( void )
+		{
+			return( m_bPermissionGranted );
+		};
+
+	private:
+		bool	m_bIsProgMode;
+		bool	m_bPermissionGranted;
 };
 
 

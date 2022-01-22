@@ -3,10 +3,9 @@
 
 //##########################################################################
 //#
-//#		DebuggingClass
+//#		StateMachineClass
 //#
-//#	This class will deliver text output to different output devices.
-//#	e.g.: OLED display
+//#	This class contains the state machine for 'FREMO Key Box'
 //#
 //#-------------------------------------------------------------------------
 //#
@@ -17,7 +16,7 @@
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version:	 0.01	vom: 21.01.2022
+//#	File version: 0.01	vom: 21.01.2022
 //#
 //#	Implementation:
 //#		-	first version
@@ -31,6 +30,8 @@
 //
 //==========================================================================
 
+#include <stdint.h>
+
 
 //==========================================================================
 //
@@ -38,23 +39,17 @@
 //
 //==========================================================================
 
-typedef enum info_lines
+typedef enum box_state
 {
-	infoLineFields = 1,
-	infoLineInit,
-	infoLineLedTest
-	
-}	info_lines_t;
+	STATE_POWER_ON				= 0,
+	STATE_PERMISSION_GRANTED,
+	STATE_KEY_OUT_BOOT,
+	STATE_KEY_OUT,
+	STATE_KEY_LOCKED_PRE,
+	STATE_KEY_LOCKED,
+	STATE_KEY_UNLOCKED
 
-
-typedef enum notify_type
-{
-	NT_Sensor = 0,
-	NT_Request,
-	NT_Report,
-	NT_State
-	
-}	notify_type_t;
+} box_state_t;
 
 
 //==========================================================================
@@ -65,39 +60,40 @@ typedef enum notify_type
 
 
 ///////////////////////////////////////////////////////////////////////
-//	CLASS:	DebuggingClass
+//	CLASS:	StateMachineClass
 //
-class DebuggingClass
+//	This class contains the state machine for 'FREMO Key Box'
+//
+class StateMachineClass
 {
-	public:
-		DebuggingClass();
-
-		void Init( void );
-
-		void PrintTitle( uint8_t versionMain, uint8_t versionMinor );
-		void PrintInfoLine( info_lines_t number );
-
-		void PrintNotifyType( notify_type_t type );
-		void PrintNotifyMsg( uint16_t address, uint8_t dir );
-
-		void PrintLncvDiscoverStart( bool start, uint16_t artikel, uint16_t address );
-		void PrintLncvStop();
-		void PrintLncvReadWrite( bool doRead, uint16_t address, uint16_t value );
-
-		void PrintStorageCheck( uint8_t byte1, uint8_t byte2 );
-		void PrintStorageDefault( void );
-		void PrintStorageRead( void );
-		
-		void PrintStatus( bool bPermission, bool bKeyIn, bool bButtonPressed, bool bServoLockPos );
-
-		void PrintText( char *text );
-		void PrintCounter( void );
-
 	private:
-		notify_type_t	m_NotifyType;
-		uint32_t		m_counter;
+		box_state_t		m_eState;
+		box_state_t		m_eOldState;
+		uint32_t		m_ulDelayMillis;
 
-		void SetLncvMsgPos( void );
+	public:
+		//*********************************************************
+		//	Constructor
+		//
+		StateMachineClass();
+
+		//*********************************************************
+		//	GetState
+		//---------------------------------------------------------
+		//	The function will return the actual state.
+		//
+		inline box_state_t GetState( void )
+		{
+			return( m_eState );
+		};
+		
+		//*********************************************************
+		//	CheckState
+		//---------------------------------------------------------
+		//	The function will perform state changes depending
+		//	of the internal data stored in the 'data pool'
+		//
+		box_state_t CheckState( void );
 };
 
 
@@ -107,4 +103,4 @@ class DebuggingClass
 //
 //==========================================================================
 
-extern DebuggingClass	g_clDebugging;
+extern StateMachineClass	g_clStateMachine;

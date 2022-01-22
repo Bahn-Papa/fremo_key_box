@@ -10,6 +10,13 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version: 0.02	vom: 23.01.2022
+//#
+//#	Implementation:
+//#		-	under development
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version:	 0.01	vom: 21.01.2022
 //#
 //#	Implementation:
@@ -44,6 +51,13 @@
 class DebounceClass
 {
 	public:
+		//--------------------------------------------------------------
+		//	creates an instance of the class DebounceClass
+		//
+		//	Parameter:
+		//		repeatMask	Specifies in a bit mask for which keys the
+		//					repeat function will be switched on
+		//
 		DebounceClass( uint8_t repeatMask );
 
 		//--------------------------------------------------------------
@@ -117,6 +131,19 @@ class DebounceClass
 		//
 		uint8_t GetKeyLong( uint8_t key_mask );
 
+		//--------------------------------------------------------------
+		//	sets the repeat mask to enable the repeat function for
+		//	the inputs that are denoted in the bit field
+		//
+		//	Parameter:
+		//		repeat_mask	Specifies in a bit mask for which keys the
+		//					repeat function will be switched on
+		//
+		inline void SetRepeatMask( uint8_t repeat_mask )
+		{
+			m_uiRepeatMask = repeat_mask;
+		};
+
 	private:
 		//--------------------------------------------------------------
 		//		m_uiRepeatMask
@@ -145,18 +172,19 @@ class DebounceClass
 
 		//--------------------------------------------------------------
 		//		m_uiKeyRepeat
-		//	enthält die Info, welche Taste lange gedrückt wurde.
+		//	bit field containing all pressed keys that have reached
+		//	the repeat state
+		//	(bit set = key in repeat state)
 		//
 		uint8_t m_uiKeyRepeat;
 
 		//--------------------------------------------------------------
-		//		m_uiEntprellung1
-		//		m_uiEntprellung2
+		//		m_uiDebounce1
+		//		m_uiDebounce2
 		//		m_uiRepeatCounter
-		//	Hilfsvariable um die Tastenentprellung durchführen
-		//	zu können.
+		//	help variables to carry out the key debouncing
 		//
-		uint8_t m_uiEntprellung1;
-		uint8_t m_uiEntprellung2;
+		uint8_t m_uiDebounce1;
+		uint8_t m_uiDebounce2;
 		uint8_t m_uiRepeatCounter;
 };

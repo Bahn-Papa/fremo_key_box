@@ -7,6 +7,13 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version: 0.02	vom: 23.01.2022
+//#
+//#	Implementation:
+//#		-	under development
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version:	 0.01	vom: 21.01.2022
 //#
 //#	Implementation:
@@ -118,7 +125,7 @@ uint32_t	g_ulSensorMsgCounter	= 0L;
 void PrintMsgCount( void )
 {
 	g_clDisplay.ClearLine( MESSAGE_LINE );
-	sprintf( g_chDebugString, "Switch: %8ld", g_ulSwitchMsgCounter );
+	sprintf( g_chDebugString, "Switch: %8lu", g_ulSwitchMsgCounter );
 	g_clDisplay.Print( g_chDebugString );
 }
 
@@ -164,7 +171,7 @@ void DebuggingClass::PrintTitle( uint8_t versionMain, uint8_t versionMinor )
 {
 	g_clDisplay.Clear();
 	g_clDisplay.SetInverseFont( true );
-	sprintf( g_chDebugString, F( "  KeyBox V%d.%02d  " ), versionMain, versionMinor );
+	sprintf( g_chDebugString, "  KeyBox V%u.%02u  ", versionMain, versionMinor );
 	g_clDisplay.Print( g_chDebugString );
 	g_clDisplay.SetInverseFont( false );
 }
@@ -179,15 +186,15 @@ void DebuggingClass::PrintInfoLine( info_lines_t number )
 	switch( number )
 	{
 		case infoLineFields:
-			g_clDisplay.Print( F( "\nKey: no rel\nBtn: released\nSrv: unlock pos" ) );
+			g_clDisplay.Print( "\n\nKey: no rel\nBtn: released\nSrv: unlock pos" );
 			break;
 
 		case infoLineInit:
-			g_clDisplay.Print( F( "  Init:\n" ) );
+			g_clDisplay.Print( "\n  Init:\n" );
 			break;
 
 		case infoLineLedTest:
-			g_clDisplay.Print( F( "  LED Test\n" ) );
+			g_clDisplay.Print( "  LED Test\n" );
 			break;
 
 		default:
@@ -216,7 +223,7 @@ void DebuggingClass::PrintCounter( void )
 	m_counter++;
 	
 	g_clDisplay.ClearLine( MESSAGE_LINE );
-	sprintf( g_chDebugString, "Counter: %d", m_counter );
+	sprintf( g_chDebugString, "Counter: %lu", m_counter );
 	g_clDisplay.Print( g_chDebugString );
 }
 
@@ -250,19 +257,19 @@ void DebuggingClass::PrintNotifyMsg( uint16_t address, uint8_t dir )
 	switch( m_NotifyType )
 	{
 		case NT_Sensor:
-			g_clDisplay.Print( F( "E:Sensor\n" ) );
+			g_clDisplay.Print( "E:Sensor\n" );
 			break;
 
 		case NT_Request:
-			g_clDisplay.Print( F( "E:Switch Reqst\n" ) );
+			g_clDisplay.Print( "E:Switch Reqst\n" );
 			break;
 
 		case NT_Report:
-			g_clDisplay.Print( F( "E:Switch Report\n" ) );
+			g_clDisplay.Print( "E:Switch Report\n" );
 			break;
 
 		case NT_State:
-			g_clDisplay.Print( F( "E:Switch State\n" ) );
+			g_clDisplay.Print( "E:Switch State\n" );
 			break;
 	}
 
@@ -289,15 +296,15 @@ void DebuggingClass::PrintLncvDiscoverStart( bool start, uint16_t artikel, uint1
 
 	if( start )
 	{
-		g_clDisplay.Print( F( "LNCV Prog Start\n" ) );
+		g_clDisplay.Print( "LNCV Prog Start\n" );
 	}
 	else
 	{
-		g_clDisplay.Print( F( "LNCV Discover\n" ) );
+		g_clDisplay.Print( "LNCV Discover\n" );
 	}
 	
 	sprintf( g_chDebugString, "AR%5u AD%5u", artikel, address );
-	g_clDisplay.print( g_chDebugString );
+	g_clDisplay.Print( g_chDebugString );
 }
 
 
@@ -307,7 +314,7 @@ void DebuggingClass::PrintLncvDiscoverStart( bool start, uint16_t artikel, uint1
 void DebuggingClass::PrintLncvStop()
 {
 	SetLncvMsgPos();
-	g_clDisplay.Print( F( "LNCV Prog Stop" ) );
+	g_clDisplay.Print( "LNCV Prog Stop" );
 //	sprintf( g_chDebugString, "AR%5u AD%5u", ArtNr, ModuleAddress );
 //	g_clDisplay.Print( g_chDebugString );
 }
@@ -322,11 +329,11 @@ void DebuggingClass::PrintLncvReadWrite( bool doRead, uint16_t address, uint16_t
 
 	if( doRead )
 	{
-		g_clDisplay.Print( F( "LNCV Read\n" ) );
+		g_clDisplay.Print( "LNCV Read\n" );
 	}
 	else
 	{
-		g_clDisplay.Print( F( "LNCV Write\n" ) );
+		g_clDisplay.Print( "LNCV Write\n" );
 	}
 
 	sprintf( g_chDebugString, "AD%5u VA%5u", address, value );
@@ -349,7 +356,7 @@ void DebuggingClass::SetLncvMsgPos( void )
 //
 void DebuggingClass::PrintStorageCheck( uint8_t byte1, uint8_t byte2 )
 {
-	g_clDisplay.Print( F( "  Check EEPROM:\n  0:" ) );
+	g_clDisplay.Print( "  Check EEPROM:\n  0:" );
 	sprintf( g_chDebugString, "  0:0x%02X 1:0x%02X", byte1, byte2 );
 	g_clDisplay.Print( g_chDebugString );
 }
@@ -360,7 +367,7 @@ void DebuggingClass::PrintStorageCheck( uint8_t byte1, uint8_t byte2 )
 //
 void DebuggingClass::PrintStorageDefault( void )
 {
-	g_clDisplay.Print( F( "\nSet default Adr" ) );
+	g_clDisplay.Print( "\nSet default Adr" );
 }
 
 
@@ -369,14 +376,14 @@ void DebuggingClass::PrintStorageDefault( void )
 //
 void DebuggingClass::PrintStorageRead( void )
 {
-	g_clDisplay.Print( F( "\n  Lese LNCVs\n" ) );
+	g_clDisplay.Print( "\n  Lese LNCVs\n" );
 }
 
 
 //******************************************************************
 //	PrintDataPoolStatus
 //
-void DebuggingClass::PrintDataPoolStatus( bool bPermission, bool bKeyIn, bool bButtonPressed, bool bServoLockPos )
+void DebuggingClass::PrintStatus( bool bPermission, bool bKeyIn, bool bButtonPressed, bool bServoLockPos )
 {
 	g_clDisplay.SetCursor( KEY_LINE, KEY_PERMISSION_COLUMN );
 	g_clDisplay.Print( bPermission ? "  " : "no" );
@@ -385,7 +392,7 @@ void DebuggingClass::PrintDataPoolStatus( bool bPermission, bool bKeyIn, bool bB
 	g_clDisplay.SetCursor( BUTTON_LINE, BUTTON_STATE_COLUMN );
 	g_clDisplay.Print( bButtonPressed ? "pressed " : "released" );
 	g_clDisplay.SetCursor( SERVO_LINE, SERVO_STATE_COLUMN );
-	g_clDisplay.Print( bServoLockPos ? "  " : "un")
+	g_clDisplay.Print( bServoLockPos ? "  " : "un");
 }
 
 

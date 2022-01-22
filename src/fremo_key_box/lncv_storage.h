@@ -14,6 +14,13 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version: 0.02	vom: 23.01.2022
+//#
+//#	Implementation:
+//#		-	under development
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version:	 0.01	Date: 21.01.2022
 //#
 //#	Implementation:
@@ -51,7 +58,7 @@ class LncvStorageClass
 		void		Init( void );
 		bool		IsValidLNCVAddress( uint16_t Adresse );
 		uint16_t	ReadLNCV(  uint16_t Adresse );
-		void		WriteLNCV( uint16_t Adresse, uint16_t Value )
+		void		WriteLNCV( uint16_t Adresse, uint16_t Value );
 
 		//----------------------------------------------------------
 		//

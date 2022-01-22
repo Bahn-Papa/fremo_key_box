@@ -5,27 +5,25 @@
 //#
 //#		IO_ControlClass
 //#
-//#	Diese Klasse verwaltet die Ports des Atmel Chips.
-//#	Es werden Funktionen zur Verfügung gestellt, um
-//#		-	diverse Ausgänge zu schalten
-//#		-	diverse Eingänge auszuwerten
+//#	This class operates the ports of the Atmel chip.
+//#	There are functions to
+//#		-	check digital inputs
+//#		-	set digital outputs
+//#		-	position a servo
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	Version: 1.01	vom: 07.01.2022
+//#	File version: 0.02	vom: 23.01.2022
 //#
-//#	Umsetzung:
-//#		-	Anpassung an Platine Version 6
-//#			Einbindung der DIP-Switches für die Konfiguration
-//#		-	Neue Funktionen zur Abfrage der DIP-Switches
+//#	Implementation:
+//#		-	under development
 //#
 //#-------------------------------------------------------------------------
-//#	Version: 1.0	vom: 01.08.2021
 //#
-//#	Umsetzung:
-//#		-	Initialisierung
-//#		-	Test
-//#		-	Ein- und Ausschalten
+//#	File version: 0.01	vom: 21.01.2022
+//#
+//#	Implementation:
+//#		-	first version
 //#
 //##########################################################################
 
@@ -47,19 +45,27 @@
 //
 //==========================================================================
 
-//----	LEDs  ----------------------------------------------------------
-#define LED_YELLOW		1
-#define LED_RED			2
-#define LED_GREEN		3
 
-//----	Pseudonym (Alias)  ---------------------------------------------
-#define LED_PROG_MODE				LED_YELLOW
-#define LED_UEBERTRAGRUNGSSTOERUNG	LED_RED
-#define LED_ANRUECKMELDER			LED_GREEN
+//=====================================================================
+//
+//		K O N S T A N T E
+//
+//=====================================================================
+
+extern const uint32_t	cg_ulInterval_20_ms;
+extern const uint32_t	cg_ulInterval_100_ms;
+extern const uint32_t	cg_ulInterval_500_ms;
+extern const uint32_t	cg_ulInterval_2_s;
 
 
-///////////////////////////////////////////////////////////////////////
-//	CLASS:	LedControlClass
+////////////////////////////////////////////////////////////////////////
+//	CLASS:	IO_ControlClass
+//
+//	This class operates the ports of the Atmel chip.
+//	There are functions to
+//		-	check digital inputs
+//		-	set digital outputs
+//		-	position a servo
 //
 class IO_ControlClass
 {
@@ -67,35 +73,32 @@ class IO_ControlClass
 		IO_ControlClass();
 
 		void Init( void );
-		void Test( uint16_t delayTime );
 		void ReadInputs( void );
 
-		void LedOn( uint8_t leds );
-		void LedOff( uint8_t leds );
+		void LedOn( void );
+		void LedOff( void );
 
-		bool IsLedOn( uint8_t led );
+		inline void LedFast( void )
+		{
+			m_bLedFast = true;
+		};
 
-		void BlockEnable( void );
-		void BlockDisable( void );
+		inline void LedSlow( void )
+		{
+			m_bLedSlow = true;
+		};
 
-		bool IsBlockDetect( void );
+		void SetServoToLockPosition( void );
+		void SetServoToUnlockPosition( void );
 
-		void KeyLedOn( void );
-		void KeyLedOff( void );
-
-		bool IsKeyLedOn( void );
-
-		void KeyRelaisOn( void );
-		void KeyRelaisOff( void );
-
-		bool IsReset( void );
-		bool IsBlockOnOff( void );
+		bool IsLedOn( void );
 		bool IsKeyIn( void );
-		bool IsContact( void );
-
-		bool IsConfigKey( void );
-		bool IsConfigKeyByBox( void );
-		bool IsConfigRichtungsbetrieb( void );
+		bool IsButtonPressed( void );
+		bool IsServoInLockPosition( void );
+		
+	private:
+		bool	m_bLedFast;
+		bool	m_bLedSlow;
 };
 
 

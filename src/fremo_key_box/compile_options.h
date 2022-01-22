@@ -17,6 +17,20 @@
 //#			If defined, then commands to receive / revoke unlock permission
 //#			will be handled by hardware with the help of a DIN connector.
 //#
+//#-------------------------------------------------------------------------
+//#
+//#	File version: 0.02	vom: 23.01.2022
+//#
+//#	Implementation:
+//#		-	under development
+//#
+//#-------------------------------------------------------------------------
+//#
+//#	File version: 0.01	vom: 21.01.2022
+//#
+//#	Implementation:
+//#		-	initial version
+//#
 //##########################################################################
 
 

@@ -7,6 +7,13 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version: 0.02	vom: 23.01.2022
+//#
+//#	Implementation:
+//#		-	under development
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version:	 0.01	vom: 21.01.2022
 //#
 //#	Implementation:
@@ -49,6 +56,11 @@
 //******************************************************************
 //	Constructor
 //------------------------------------------------------------------
+//	creates an instance of the class DebounceClass
+//
+//	Parameter:
+//		repeatMask	Specifies in a bit mask for which keys the
+//					repeat function will be switched on
 //
 DebounceClass::DebounceClass( uint8_t repeatMask )
 {
@@ -70,7 +82,8 @@ DebounceClass::DebounceClass( uint8_t repeatMask )
 //	This function must therefore be called as quickly and
 //	as often as possible.
 //
-//	Parameter:	PIN value of the port that is to be debounced
+//	Parameter:
+//		keyIn	PIN value of the port that is to be debounced
 //
 void DebounceClass::Work( uint8_t keyIn )
 {
@@ -99,8 +112,13 @@ void DebounceClass::Work( uint8_t keyIn )
 //******************************************************************
 //	GetKeyPress
 //------------------------------------------------------------------
-//	Gibt die Information zurück, ob eine Taste neu gedrückt wurde.
-//	Dabei wird jede Taste wird nur EINMAL gemeldet.
+//	Returns the information in a bit field whether a key
+//	was pressed.
+//	Each key can only be reported ONCE.
+//
+//	Parameter:
+//		key_mask	Specifies in a bit mask which keys should
+//					be checked
 //
 uint8_t DebounceClass::GetKeyPress( uint8_t key_mask )
 {
@@ -114,11 +132,15 @@ uint8_t DebounceClass::GetKeyPress( uint8_t key_mask )
 //******************************************************************
 //	GetKeyRepeat
 //------------------------------------------------------------------
-//	Gibt die Information zurück, ob eine Taste lang genug
-//	gedrückt wurde, so dass die REPEAT-Funktion aktiviert wurde.
-//	Nach einer Anlaufverzögerung wird die jeweilige Taste in
-//	aufeinander folgenden Funktionsaufrufen immer wieder
-//	gemeldet, solange sie gedrückt bleibt.
+//	Returns the information in a bit field whether a key
+//	was pressed long enough to activate the REPEAT function.
+//	After a start-up delay, the respective key is reported
+//	again and again in successive function calls as long as
+//	it remains pressed.
+//
+//	Parameter:
+//		key_mask	Specifies in a bit mask which keys should
+//					be checked
 //
 uint8_t DebounceClass::GetKeyRepeat( uint8_t key_mask )
 {
@@ -132,8 +154,12 @@ uint8_t DebounceClass::GetKeyRepeat( uint8_t key_mask )
 //******************************************************************
 //	GetKeyState
 //------------------------------------------------------------------
-//	Gibt die Information zurück, ob eine Taste im Augenblick
-//	gedrückt ist.
+//	Returns the information in a bit field whether a key is
+//	currently pressed.
+//
+//	Parameter:
+//		key_mask	Specifies in a bit mask which keys should
+//					be checked
 //
 uint8_t DebounceClass::GetKeyState( uint8_t key_mask )
 {
@@ -146,7 +172,13 @@ uint8_t DebounceClass::GetKeyState( uint8_t key_mask )
 //******************************************************************
 //	GetKeyShort
 //------------------------------------------------------------------
-//	Gibt die Information zurück, ob eine Taste kurz gedrückt wurde.
+//	Returns the information in a bit field whether a key
+//	was pressed short-time.
+//	Each key can only be reported ONCE.
+//
+//	Parameter:
+//		key_mask	Specifies in a bit mask which keys should
+//					be checked
 //
 uint8_t DebounceClass::GetKeyShort( uint8_t key_mask )
 {
@@ -157,7 +189,13 @@ uint8_t DebounceClass::GetKeyShort( uint8_t key_mask )
 //******************************************************************
 //	GetKeyLong
 //------------------------------------------------------------------
-//	Gibt die Information zurück, ob eine Taste lang gedrückt wurde.
+//	Returns the information in a bit field whether a key
+//	was pressed long-time.
+//	Each key can only be reported ONCE.
+//
+//	Parameter:
+//		key_mask	Specifies in a bit mask which keys should
+//					be checked
 //
 uint8_t DebounceClass::GetKeyLong( uint8_t key_mask )
 {
