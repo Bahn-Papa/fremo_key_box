@@ -51,6 +51,16 @@
 
 
 //---------------------------------------------------------------------
+//	Timer 3 and Servo
+//
+#define	TIMER_OFF		TCCR3B &= ~((1 << CS32) | (1 << CS31) | (1 << CS30))
+#define TIMER_ON		TCCR3B |= (1 << CS31)
+
+#define SERVO_LOCK_POS		4000
+#define SERVO_UNLOCK_POS	2000
+
+
+//---------------------------------------------------------------------
 //	Port B
 
 
@@ -68,6 +78,22 @@
 
 //---------------------------------------------------------------------
 //	Port F
+//		PF0		Button Release
+//		PF1		Switch Lock Position (if key is in)
+//		PF2		N/A
+//		PF3		N/A
+//		PF4		not used
+//		PF5		not used
+//		PF6		Permission LED
+//		PF7		not used
+//
+#define BUTTON_RELEASE		PF0
+#define	SWITCH_LOCK_POS		PF1
+#define	LED_PERMISSION		PF6
+
+#define PORT_F_FREE_BITS	((1 << PF4) | (1 << PF5) | (1 << PF7))
+#define PORT_F_OUTPUTS		 (1 << LED_PERMISSION)
+#define PORT_F_INPUTS		((1 << BUTTON_RELEASE) | (1 << SWITCH_LOCK_POS))
 
 
 //==========================================================================
@@ -93,6 +119,8 @@ IO_ControlClass	g_clControl	= IO_ControlClass();
 uint32_t		g_ulMillisFlash;
 uint32_t		g_ulMillisReadInputs;
 bool			g_bServoInLockPos;
+
+DebounceClass	g_clPortF( 0x00 );
 
 
 //==========================================================================
@@ -128,6 +156,8 @@ void IO_ControlClass::Init( void )
 {
 	//----	set unused pins to input with pullup  ------------------
 	//
+	DDRF	&= ~PORT_F_FREE_BITS;
+	PORTF	|=  PORT_F_FREE_BITS;
 
 	//----	Port B  ------------------------------------------------
 	//
@@ -143,12 +173,40 @@ void IO_ControlClass::Init( void )
 
 	//----	Port F  ------------------------------------------------
 	//
+	DDRF	&= ~PORT_F_INPUTS;		//	configure as Input
+	PORTF	|=  PORT_F_INPUTS;		//	Pull-Up on
+
+	DDRF	|=  PORT_F_OUTPUTS;		//	configure as Output
+	PORTF	&= ~PORT_F_OUTPUTS;		//	switch off
+
+	//--------------------------------------------------------------
+	//	set timer 3 for servo control
+	//
+	//	CTC mode, Top defined by ICR3
+	//	Compare Match on OCR3A
+	//
+	//	16 MHz / 8 = 2 MHz entspricht 0,5 µsec
+	//	0,5 µsec x 40000 = 20 ms
+	//	0,5 µsec x  2000 =  1 ms
+	//
+	TIMER_OFF;	//	Timer 3 stoppen
+
+	ICR3	= 40000L;
+
+	TCCR3A |=	(1 << COM3A1);
+	TCCR3A &= ~((1 << COM3A0) | (1 << WGM31) | (1 << WGM30));
+
+	TCCR3B |=  ((1 << WGM33) | (1 << WGM32));
+
+	OCR3A   = SERVO_UNLOCK_POS;	//	Servo to unlock position
+	DDRC   |= (1 << PC6);
 
 	//--------------------------------------------------------------
 	//	set servo to unlock position
 	//	may be the key is not inside of the key box
 	//
 	SetServoToUnlockPosition();
+	TIMER_ON;
 
 	//----	start read timer  --------------------------------------
 	g_ulMillisReadInputs = millis() + cg_ulInterval_20_ms;
@@ -177,6 +235,7 @@ void IO_ControlClass::ReadInputs( void )
 	//----------------------------------------------------------
 	//	get the inputs from the ports
 	//
+	g_clPortF.Work( PINF );
 
 
 	//----------------------------------------------------------
@@ -217,6 +276,7 @@ void IO_ControlClass::ReadInputs( void )
 //
 void IO_ControlClass::LedOn( void )
 {
+	PORTF |= LED_PERMISSION;
 }
 
 
@@ -225,6 +285,7 @@ void IO_ControlClass::LedOn( void )
 //
 void IO_ControlClass::LedOff( void )
 {
+	PORTF &= ~LED_PERMISSION;
 }
 
 
@@ -234,6 +295,8 @@ void IO_ControlClass::LedOff( void )
 //
 void IO_ControlClass::SetServoToLockPosition( void )
 {
+	OCR3A = SERVO_LOCK_POS;
+
 	g_bServoInLockPos = true;
 }
 
@@ -244,6 +307,8 @@ void IO_ControlClass::SetServoToLockPosition( void )
 //
 void IO_ControlClass::SetServoToUnlockPosition( void )
 {
+	OCR3A = SERVO_UNLOCK_POS;
+
 	g_bServoInLockPos = false;
 }
 
@@ -254,8 +319,8 @@ void IO_ControlClass::SetServoToUnlockPosition( void )
 //
 bool IO_ControlClass::IsLedOn( void )
 {
-//	return( 0 == (PINC & leds) );
-	return( false );
+	return( 0 != (PINF & LED_PERMISSION) );
+//	return( false );
 }
 
 
@@ -265,7 +330,8 @@ bool IO_ControlClass::IsLedOn( void )
 //
 bool IO_ControlClass::IsKeyIn( void )
 {
-	return( false );
+	return( 0 != g_clPortF.GetKeyState( 1 << SWITCH_LOCK_POS ) );
+//	return( false );
 }
 
 
@@ -275,7 +341,8 @@ bool IO_ControlClass::IsKeyIn( void )
 //
 bool IO_ControlClass::IsButtonPressed( void )
 {
-	return( false );
+	return( 0 != g_clPortF.GetKeyState( 1 << BUTTON_RELEASE ) );
+//	return( false );
 }
 
 

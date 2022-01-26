@@ -160,6 +160,7 @@ DebuggingClass::DebuggingClass()
 void DebuggingClass::Init( void )
 {
 	g_clDisplay.Init();
+	g_clDisplay.Flip( true );
 }
 
 
