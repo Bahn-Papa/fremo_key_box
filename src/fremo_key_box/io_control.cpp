@@ -12,6 +12,13 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version: 0.03	vom: 27.01.2022
+//#
+//#	Implementation:
+//#		-	add I/O handling
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version: 0.02	vom: 23.01.2022
 //#
 //#	Implementation:
@@ -56,8 +63,8 @@
 #define	TIMER_OFF		TCCR3B &= ~((1 << CS32) | (1 << CS31) | (1 << CS30))
 #define TIMER_ON		TCCR3B |= (1 << CS31)
 
-#define SERVO_LOCK_POS		4000
-#define SERVO_UNLOCK_POS	2000
+#define SERVO_LOCK_POS		2000
+#define SERVO_UNLOCK_POS	1000
 
 
 //---------------------------------------------------------------------
@@ -189,24 +196,23 @@ void IO_ControlClass::Init( void )
 	//	0,5 µsec x 40000 = 20 ms
 	//	0,5 µsec x  2000 =  1 ms
 	//
-	TIMER_OFF;	//	Timer 3 stoppen
-
-	ICR3	= 40000L;
+	TCCR3B &= ~((1 << CS32) | (1 << CS31) | (1 << CS30));	//	Timer 3 stoppen
 
 	TCCR3A |=	(1 << COM3A1);
 	TCCR3A &= ~((1 << COM3A0) | (1 << WGM31) | (1 << WGM30));
 
 	TCCR3B |=  ((1 << WGM33) | (1 << WGM32));
 
-	OCR3A   = SERVO_UNLOCK_POS;	//	Servo to unlock position
-	DDRC   |= (1 << PC6);
+	ICR3	= 20000;
 
 	//--------------------------------------------------------------
 	//	set servo to unlock position
 	//	may be the key is not inside of the key box
 	//
-	SetServoToUnlockPosition();
-	TIMER_ON;
+	OCR3A   = SERVO_UNLOCK_POS;		//	Servo to unlock position
+	DDRC   |= (1 << PC6);			//	set pin to output
+
+	TCCR3B |= (1 << CS31);			//	Timer starten
 
 	//----	start read timer  --------------------------------------
 	g_ulMillisReadInputs = millis() + cg_ulInterval_20_ms;
