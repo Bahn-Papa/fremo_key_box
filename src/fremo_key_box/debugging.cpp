@@ -22,7 +22,7 @@
 //#			 S                     1 1 1 1 1 1
 //#			Z  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
 //#			0    K e y   B o x   V x . x x
-//#			1
+//#			1  A c t :        <state>
 //#			2  K e y :         r e l     O U T
 //#						 n o   r e l     I N
 //#			3  B t n :   r e l e a s e d
@@ -43,6 +43,8 @@
 //==========================================================================
 
 #include "compile_options.h"
+
+#include "state_machine.h"
 
 
 #ifdef DEBUGGING_PRINTOUT
@@ -66,20 +68,22 @@
 //----------------------------------------------------------------------
 //	definition of display positions
 //
+#define STATE_LINE				1
+#define STATE_COLUMN			5
+#define KEY_LINE				2
+#define KEY_PERMISSION_COLUMN	5
+#define KEY_POSITION_COLUMN		13
+#define BUTTON_LINE				3
+#define BUTTON_STATE_COLUMN		5
+#define SERVO_LINE				4
+#define SERVO_STATE_COLUMN		5
+#define MESSAGE_LINE			7
 
 
 #ifdef COMMAND_CONNECTION_LOCONET
 
-	#define KEY_LINE				2
-	#define KEY_PERMISSION_COLUMN	5
-	#define KEY_POSITION_COLUMN		13
-	#define BUTTON_LINE				3
-	#define BUTTON_STATE_COLUMN		5
-	#define SERVO_LINE				4
-	#define SERVO_STATE_COLUMN		5
 	#define	LOCONET_MSG_LINE		5
 	#define LOCONET_MSG_COLUMN		0
-	#define MESSAGE_LINE			7
 	
 
 	//------------------------------------------------------------------
@@ -187,7 +191,10 @@ void DebuggingClass::PrintInfoLine( info_lines_t number )
 	switch( number )
 	{
 		case infoLineFields:
-			g_clDisplay.Print( "\n\nKey: no rel\nBtn: released\nSrv: unlock pos" );
+			g_clDisplay.Print( "\nAct: State Boot\n" );
+			g_clDisplay.Print( "Key: no rel\n" );
+			g_clDisplay.Print( "Btn: released\n" );
+			g_clDisplay.Print( "Srv: unlock pos" );
 			break;
 
 		case infoLineInit:
@@ -382,10 +389,43 @@ void DebuggingClass::PrintStorageRead( void )
 
 
 //******************************************************************
-//	PrintDataPoolStatus
+//	PrintStatus
 //
-void DebuggingClass::PrintStatus( bool bPermission, bool bKeyIn, bool bButtonPressed, bool bServoLockPos )
+void DebuggingClass::PrintStatus(	box_state_t	state,
+									bool		bPermission,
+									bool		bKeyIn,
+									bool		bButtonPressed,
+									bool		bServoLockPos	)
 {
+	g_clDisplay.SetCursor( STATE_LINE, STATE_COLUMN );
+	
+	switch( state )
+	{
+		case STATE_PERMISSION_GRANTED:
+			g_clDisplay.Print( "Permission" );
+			break;
+
+		case STATE_KEY_OUT_BOOT:
+			g_clDisplay.Print( "Out Boot  " );
+			break;
+
+		case STATE_KEY_OUT:
+			g_clDisplay.Print( "Key Out   " );
+			break;
+
+		case STATE_KEY_LOCKED_PRE:
+			g_clDisplay.Print( "Locked Pre" );
+			break;
+
+		case STATE_KEY_LOCKED:
+			g_clDisplay.Print( "Key Locked" );
+			break;
+
+		case STATE_KEY_UNLOCKED:
+			g_clDisplay.Print( "Key Unlock" );
+			break;
+	}
+
 	g_clDisplay.SetCursor( KEY_LINE, KEY_PERMISSION_COLUMN );
 	g_clDisplay.Print( bPermission ? "  " : "no" );
 	g_clDisplay.SetCursor( KEY_LINE, KEY_POSITION_COLUMN );

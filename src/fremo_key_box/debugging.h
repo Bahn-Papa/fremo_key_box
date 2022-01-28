@@ -31,6 +31,8 @@
 //
 //==========================================================================
 
+#include "state_machine.h"
+
 
 //==========================================================================
 //
@@ -88,7 +90,11 @@ class DebuggingClass
 		void PrintStorageDefault( void );
 		void PrintStorageRead( void );
 		
-		void PrintStatus( bool bPermission, bool bKeyIn, bool bButtonPressed, bool bServoLockPos );
+		void PrintStatus(	box_state_t	state,
+							bool		bPermission,
+							bool		bKeyIn,
+							bool		bButtonPressed,
+							bool		bServoLockPos	);
 
 		void PrintText( char *text );
 		void PrintCounter( void );
