@@ -12,6 +12,14 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version: 0.05	vom: 28.01.2022
+//#
+//#	Implementation:
+//#		-	add function IsPermissionGranted()
+//#			this function is used if no LN is available (debug)
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version: 0.04	vom: 28.01.2022
 //#
 //#	Implementation:
@@ -68,8 +76,8 @@
 //---------------------------------------------------------------------
 //	Servo
 //
-#define SERVO_LOCK_POS		(4000 - 1)
-#define SERVO_UNLOCK_POS	(2000 - 1)
+#define SERVO_LOCK_POS		3999	//	2 ms pulse
+#define SERVO_UNLOCK_POS	1999	//	1 ms pulse
 
 
 //---------------------------------------------------------------------
@@ -91,21 +99,22 @@
 //---------------------------------------------------------------------
 //	Port F
 //		PF0		Button Release
-//		PF1		Switch Lock Position (if key is in)
+//		PF1		Switch Lock Position (true if key is in)
 //		PF2		N/A
 //		PF3		N/A
-//		PF4		not used
+//		PF4		Permission granted (if no LN available)
 //		PF5		not used
 //		PF6		Permission LED
 //		PF7		not used
 //
-#define BUTTON_RELEASE		PF0
-#define	SWITCH_LOCK_POS		PF1
-#define	LED_PERMISSION		PF6
+#define BUTTON_RELEASE				PF0
+#define	SWITCH_LOCK_POS				PF1
+#define DEBUG_PERMISSION_GRANTED	PF4
+#define	LED_PERMISSION				PF6
 
-#define PORT_F_FREE_BITS	(_BV( PF4 ) | _BV( PF5 ) | _BV( PF7 ))
+#define PORT_F_FREE_BITS	(_BV( PF5 ) | _BV( PF7 ))
 #define PORT_F_OUTPUTS		 _BV( LED_PERMISSION )
-#define PORT_F_INPUTS		(_BV( BUTTON_RELEASE ) | _BV( SWITCH_LOCK_POS ))
+#define PORT_F_INPUTS		(_BV( PF0 ) | _BV( PF1 ) | _BV( PF4 ))
 
 
 //==========================================================================
@@ -228,7 +237,7 @@ void IO_ControlClass::Init( void )
 
 	TCCR3B |=  (_BV( WGM33 )  | _BV( WGM32 ));
 
-	ICR3	= (40000 - 1);	//	20 ms cycle time
+	ICR3	= 39999;	//	20 ms cycle time
 
 	//--------------------------------------------------------------
 	//	set servo to unlock position
@@ -386,4 +395,15 @@ bool IO_ControlClass::IsButtonPressed( void )
 bool IO_ControlClass::IsServoInLockPosition( void )
 {
 	return( g_bServoInLockPos );
+}
+
+
+//******************************************************************
+//	IsPermissionGranted
+//------------------------------------------------------------------
+//
+bool IO_ControlClass::IsPermissionGranted( void )
+{
+	return( 0 != g_clPortF.GetKeyState( _BV( DEBUG_PERMISSION_GRANTED ) ) );
+//	return( false );
 }

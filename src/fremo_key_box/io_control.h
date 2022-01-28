@@ -13,6 +13,14 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version: 0.03	vom: 28.01.2022
+//#
+//#	Implementation:
+//#		-	add function IsPermissionGranted()
+//#			this function is used if no LN is available (debug)
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version: 0.02	vom: 23.01.2022
 //#
 //#	Implementation:
@@ -95,7 +103,8 @@ class IO_ControlClass
 		bool IsKeyIn( void );
 		bool IsButtonPressed( void );
 		bool IsServoInLockPosition( void );
-		
+		bool IsPermissionGranted( void );
+
 	private:
 		bool	m_bLedFast;
 		bool	m_bLedSlow;
