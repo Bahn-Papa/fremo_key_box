@@ -12,6 +12,13 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version: 0.06	vom: 28.01.2022
+//#
+//#	Bug Fix:
+//#		-	correct handling of LED (on, off, flash)
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version: 0.05	vom: 28.01.2022
 //#
 //#	Implementation:
@@ -301,12 +308,12 @@ void IO_ControlClass::ReadInputs( void )
 			if( IsLedOn() )
 			{
 				//----	switch LED off  ----
-				g_clControl.LedOff();
+				cbi( PORTF, LED_PERMISSION );
 			}
 			else
 			{
 				//----	switch LED on  ----
-				g_clControl.LedOn();
+				sbi( PORTF, LED_PERMISSION );
 			}
 		}
 	}
@@ -318,6 +325,9 @@ void IO_ControlClass::ReadInputs( void )
 //
 void IO_ControlClass::LedOn( void )
 {
+	m_bLedFast	= false;
+	m_bLedSlow	= false;
+
 	sbi( PORTF, LED_PERMISSION );
 }
 
@@ -327,6 +337,9 @@ void IO_ControlClass::LedOn( void )
 //
 void IO_ControlClass::LedOff( void )
 {
+	m_bLedFast	= false;
+	m_bLedSlow	= false;
+
 	cbi( PORTF, LED_PERMISSION );
 }
 
