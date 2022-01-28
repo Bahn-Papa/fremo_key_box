@@ -7,6 +7,13 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version: 0.04	vom: 28.01.2022
+//#
+//#	Bug Fix:
+//#		-	correct the output of 'PrintStorageCheck()'
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version: 0.03	vom: 28.01.2022
 //#
 //#	Implementation:
@@ -371,7 +378,7 @@ void DebuggingClass::SetLncvMsgPos( void )
 //
 void DebuggingClass::PrintStorageCheck( uint8_t byte1, uint8_t byte2 )
 {
-	g_clDisplay.Print( "  Check EEPROM:\n  0:" );
+	g_clDisplay.Print( "  Check EEPROM:\n" );
 	sprintf( g_chDebugString, "  0:0x%02X 1:0x%02X", byte1, byte2 );
 	g_clDisplay.Print( g_chDebugString );
 }
