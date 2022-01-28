@@ -12,6 +12,14 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version: 0.04	vom: 28.01.2022
+//#
+//#	Implementation:
+//#		-	correct the settings for timer 3 to control the servo
+//#		-	correct switching of led
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version: 0.03	vom: 27.01.2022
 //#
 //#	Implementation:
@@ -58,13 +66,10 @@
 
 
 //---------------------------------------------------------------------
-//	Timer 3 and Servo
+//	Servo
 //
-#define	TIMER_OFF		TCCR3B &= ~((1 << CS32) | (1 << CS31) | (1 << CS30))
-#define TIMER_ON		TCCR3B |= (1 << CS31)
-
-#define SERVO_LOCK_POS		2000
-#define SERVO_UNLOCK_POS	1000
+#define SERVO_LOCK_POS		(4000 - 1)
+#define SERVO_UNLOCK_POS	(2000 - 1)
 
 
 //---------------------------------------------------------------------
@@ -98,9 +103,24 @@
 #define	SWITCH_LOCK_POS		PF1
 #define	LED_PERMISSION		PF6
 
-#define PORT_F_FREE_BITS	((1 << PF4) | (1 << PF5) | (1 << PF7))
-#define PORT_F_OUTPUTS		 (1 << LED_PERMISSION)
-#define PORT_F_INPUTS		((1 << BUTTON_RELEASE) | (1 << SWITCH_LOCK_POS))
+#define PORT_F_FREE_BITS	(_BV( PF4 ) | _BV( PF5 ) | _BV( PF7 ))
+#define PORT_F_OUTPUTS		 _BV( LED_PERMISSION )
+#define PORT_F_INPUTS		(_BV( BUTTON_RELEASE ) | _BV( SWITCH_LOCK_POS ))
+
+
+//==========================================================================
+//
+//		M A C R O S
+//
+//==========================================================================
+
+#ifndef cbi
+#define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
+#endif
+
+#ifndef sbi
+#define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
+#endif
 
 
 //==========================================================================
@@ -161,6 +181,8 @@ IO_ControlClass::IO_ControlClass()
 //
 void IO_ControlClass::Init( void )
 {
+	cli();
+
 	//----	set unused pins to input with pullup  ------------------
 	//
 	DDRF	&= ~PORT_F_FREE_BITS;
@@ -189,30 +211,35 @@ void IO_ControlClass::Init( void )
 	//--------------------------------------------------------------
 	//	set timer 3 for servo control
 	//
-	//	CTC mode, Top defined by ICR3
+	//	Fast PWM mode, Top defined by ICR3
 	//	Compare Match on OCR3A
+	//
+	//	F CPU		= 16 MHz
+	//	Precaler	= 8
 	//
 	//	16 MHz / 8 = 2 MHz entspricht 0,5 µsec
 	//	0,5 µsec x 40000 = 20 ms
 	//	0,5 µsec x  2000 =  1 ms
 	//
-	TCCR3B &= ~((1 << CS32) | (1 << CS31) | (1 << CS30));	//	Timer 3 stoppen
+	TCCR3B &= ~(_BV( CS32 ) | _BV( CS31 ) | _BV( CS30 ));	//	Timer 3 stoppen
 
-	TCCR3A |=	(1 << COM3A1);
-	TCCR3A &= ~((1 << COM3A0) | (1 << WGM31) | (1 << WGM30));
+	TCCR3A |=  (_BV( COM3A1 ) | _BV( WGM31 ));
+	TCCR3A &= ~(_BV( COM3A0 ) | _BV( WGM30 ));
 
-	TCCR3B |=  ((1 << WGM33) | (1 << WGM32));
+	TCCR3B |=  (_BV( WGM33 )  | _BV( WGM32 ));
 
-	ICR3	= 20000;
+	ICR3	= (40000 - 1);	//	20 ms cycle time
 
 	//--------------------------------------------------------------
 	//	set servo to unlock position
 	//	may be the key is not inside of the key box
 	//
 	OCR3A   = SERVO_UNLOCK_POS;		//	Servo to unlock position
-	DDRC   |= (1 << PC6);			//	set pin to output
+	sbi( DDRC, PC6 );				//	set pin to output
 
-	TCCR3B |= (1 << CS31);			//	Timer starten
+	sei();
+
+	sbi( TCCR3B, CS31 );			//	Timer starten (set prescaler to 8)
 
 	//----	start read timer  --------------------------------------
 	g_ulMillisReadInputs = millis() + cg_ulInterval_20_ms;
@@ -282,7 +309,7 @@ void IO_ControlClass::ReadInputs( void )
 //
 void IO_ControlClass::LedOn( void )
 {
-	PORTF |= LED_PERMISSION;
+	sbi( PORTF, LED_PERMISSION );
 }
 
 
@@ -291,7 +318,7 @@ void IO_ControlClass::LedOn( void )
 //
 void IO_ControlClass::LedOff( void )
 {
-	PORTF &= ~LED_PERMISSION;
+	cbi( PORTF, LED_PERMISSION );
 }
 
 
@@ -325,7 +352,7 @@ void IO_ControlClass::SetServoToUnlockPosition( void )
 //
 bool IO_ControlClass::IsLedOn( void )
 {
-	return( 0 != (PINF & LED_PERMISSION) );
+	return( bit_is_set( PINF, LED_PERMISSION ) );
 //	return( false );
 }
 
@@ -336,7 +363,7 @@ bool IO_ControlClass::IsLedOn( void )
 //
 bool IO_ControlClass::IsKeyIn( void )
 {
-	return( 0 != g_clPortF.GetKeyState( 1 << SWITCH_LOCK_POS ) );
+	return( 0 != g_clPortF.GetKeyState( _BV( SWITCH_LOCK_POS ) ) );
 //	return( false );
 }
 
@@ -347,7 +374,7 @@ bool IO_ControlClass::IsKeyIn( void )
 //
 bool IO_ControlClass::IsButtonPressed( void )
 {
-	return( 0 != g_clPortF.GetKeyState( 1 << BUTTON_RELEASE ) );
+	return( 0 != g_clPortF.GetKeyState( _BV( BUTTON_RELEASE ) ) );
 //	return( false );
 }
 

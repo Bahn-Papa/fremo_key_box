@@ -8,12 +8,27 @@
 
 
 #define VERSION_MAIN	0
-#define	VERSION_MINOR	2
+#define	VERSION_MINOR	4
 
 
 //##########################################################################
 //#
 //#		Version History:
+//#
+//#-------------------------------------------------------------------------
+//#
+//#	Version: 0.04	vom: 28.01.2022
+//#
+//#	Implementation:
+//#		-	correct the settings for timer 3 to control the servo
+//#		-	correct switching of led
+//#
+//#-------------------------------------------------------------------------
+//#
+//#	Version: 0.03	vom: 27.01.2022
+//#
+//#	Implementation:
+//#		-	add I/O handling
 //#
 //#-------------------------------------------------------------------------
 //#
