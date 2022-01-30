@@ -12,6 +12,15 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version: 0.07	vom: 28.01.2022
+//#
+//#	Implementation:
+//#		-	change the handling of 'Permission Granted'
+//#			the state machine must be able to clear the permission,
+//#			so add new function ClearPermisson()
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version: 0.06	vom: 28.01.2022
 //#
 //#	Bug Fix:
@@ -185,6 +194,7 @@ IO_ControlClass::IO_ControlClass()
 	g_ulMillisFlash			= 0L;
 	g_ulMillisReadInputs	= 0L;
 	g_bServoInLockPos		= false;
+	m_bPermissionGranted	= false;
 }
 
 
@@ -285,6 +295,19 @@ void IO_ControlClass::ReadInputs( void )
 	//	get the inputs from the ports
 	//
 	g_clPortF.Work( PINF );
+
+
+	//----------------------------------------------------------
+	//	check if 'Permission Granted' is pressed
+	//
+	if( 0 != g_clPortF.GetKeyPress( _BV( DEBUG_PERMISSION_GRANTED ) ) )
+	{
+		m_bPermissionGranted = true;
+	}
+	else if( 0 == g_clPortF.GetKeyState( _BV( DEBUG_PERMISSION_GRANTED ) ) )
+	{
+		m_bPermissionGranted = false;
+	}
 
 
 	//----------------------------------------------------------
@@ -408,15 +431,4 @@ bool IO_ControlClass::IsButtonPressed( void )
 bool IO_ControlClass::IsServoInLockPosition( void )
 {
 	return( g_bServoInLockPos );
-}
-
-
-//******************************************************************
-//	IsPermissionGranted
-//------------------------------------------------------------------
-//
-bool IO_ControlClass::IsPermissionGranted( void )
-{
-	return( 0 != g_clPortF.GetKeyState( _BV( DEBUG_PERMISSION_GRANTED ) ) );
-//	return( false );
 }

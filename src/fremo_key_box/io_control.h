@@ -13,6 +13,15 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version: 0.04	vom: 28.01.2022
+//#
+//#	Implementation:
+//#		-	change the handling of 'Permission Granted'
+//#			the state machine must be able to clear the permission,
+//#			so add new function ClearPermisson()
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version: 0.03	vom: 28.01.2022
 //#
 //#	Implementation:
@@ -103,11 +112,21 @@ class IO_ControlClass
 		bool IsKeyIn( void );
 		bool IsButtonPressed( void );
 		bool IsServoInLockPosition( void );
-		bool IsPermissionGranted( void );
+
+		inline bool IsPermissionGranted( void )
+		{
+			return( m_bPermissionGranted );
+		}
+
+		inline void ClearPermission( void )
+		{
+			m_bPermissionGranted = false;
+		}
 
 	private:
 		bool	m_bLedFast;
 		bool	m_bLedSlow;
+		bool	m_bPermissionGranted;
 };
 
 

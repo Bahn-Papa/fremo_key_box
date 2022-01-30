@@ -9,6 +9,15 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version: 0.03	vom: 28.01.2022
+//#
+//#	Implementation:
+//#		-	change the handling of 'Permission Granted'
+//#			the state machine must be able to clear the permission,
+//#			so add new function ClearPermisson()
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version: 0.02	vom: 23.01.2022
 //#
 //#	Implementation:
@@ -74,6 +83,11 @@ class MyLoconetClass
 		{
 			return( m_bPermissionGranted );
 		};
+
+		inline bool ClearPermission( void )
+		{
+			m_bPermissionGranted = false;
+		}
 
 	private:
 		bool	m_bIsProgMode;
