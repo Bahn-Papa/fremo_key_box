@@ -6,6 +6,13 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version: 0.03	vom: 28.01.2022
+//#
+//#	Implementation:
+//#		-	finished the sequence of the state machine
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version: 0.02	vom: 23.01.2022
 //#
 //#	Implementation:
@@ -108,11 +115,11 @@ box_state_t StateMachineClass::CheckState( void )
 		case STATE_POWER_ON:
 			if( g_clControl.IsKeyIn() )
 			{
-				m_eState = STATE_KEY_OUT_BOOT;
+				m_eState = STATE_KEY_LOCKED;
 			}
 			else
 			{
-				m_eState = STATE_KEY_LOCKED;
+				m_eState = STATE_KEY_OUT_BOOT;
 			}
 			break;
 
@@ -127,10 +134,6 @@ box_state_t StateMachineClass::CheckState( void )
 				if( STATE_KEY_OUT_BOOT == m_eState )
 				{
 					g_clControl.LedFast();
-				}
-				else
-				{
-					g_clControl.LedSlow();
 				}
 
 				g_clMyLoconet.SendKeyRemoved( true );
@@ -182,7 +185,8 @@ box_state_t StateMachineClass::CheckState( void )
 
 				m_ulDelayMillis = millis() + cg_ulInterval_2_s;
 			}
-			else if( g_clMyLoconet.IsPermissionGranted() )
+			else if(	g_clMyLoconet.IsPermissionGranted()
+					||	g_clControl.IsPermissionGranted()	)
 			{
 				m_eState = STATE_PERMISSION_GRANTED;
 			}
@@ -196,7 +200,8 @@ box_state_t StateMachineClass::CheckState( void )
 				
 				g_clControl.LedOn();
 			}
-			else if ( !g_clMyLoconet.IsPermissionGranted() )
+			else if( !(		g_clMyLoconet.IsPermissionGranted()
+						||	g_clControl.IsPermissionGranted()	) )
 			{
 				m_eState = STATE_KEY_LOCKED;
 			}
@@ -211,7 +216,12 @@ box_state_t StateMachineClass::CheckState( void )
 			if( m_eOldState != m_eState )
 			{
 				m_eOldState = m_eState;
-				
+
+				g_clControl.LedSlow();
+
+				g_clControl.ClearPermission();
+				g_clMyLoconet.ClearPermission();
+
 				g_clControl.SetServoToUnlockPosition();
 				g_clMyLoconet.SendKeyRemoved( true );
 			}
