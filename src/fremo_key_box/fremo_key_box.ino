@@ -7,13 +7,21 @@
 //##########################################################################
 
 
-#define VERSION_MAIN	0
-#define	VERSION_MINOR	4
+#define VERSION_MAIN	1
+#define	VERSION_MINOR	0
 
 
 //##########################################################################
 //#
 //#		Version History:
+//#
+//#-------------------------------------------------------------------------
+//#
+//#	Version: 1.0	vom: 28.01.2022
+//#
+//#	Implementation:
+//#		-	finished the sequence of the state machine
+//#			this leads in the first deliverable version of the program
 //#
 //#-------------------------------------------------------------------------
 //#
@@ -126,7 +134,7 @@ void setup()
 
 	g_clLncvStorage.Init();
 
-	delay( 200 );
+	delay( 500 );
 
 	//----	Prepare Display  ---------------------------------------
 #ifdef DEBUGGING_PRINTOUT
@@ -141,6 +149,9 @@ void setup()
 //
 void loop()
 {
+	box_state_t	theState;
+
+
 	//==================================================================
 	//	Read Inputs
 	//	-	Loconet messages
@@ -175,14 +186,16 @@ void loop()
 	//==================================================================
 	//	Die State-Maschinen abarbeiten
 	//
-	g_clStateMachine.CheckState();
+	theState = g_clStateMachine.CheckState();
 
 
 	//==================================================================
 	//	print actual status
 	//
 #ifdef DEBUGGING_PRINTOUT
-	g_clDebugging.PrintStatus(	g_clMyLoconet.IsPermissionGranted(),
+	g_clDebugging.PrintStatus(	theState,
+									g_clControl.IsPermissionGranted()
+								||	g_clMyLoconet.IsPermissionGranted(),
 								g_clControl.IsKeyIn(),
 								g_clControl.IsButtonPressed(),
 								g_clControl.IsServoInLockPosition() );
