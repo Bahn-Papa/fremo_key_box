@@ -9,6 +9,14 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version: 0.04	vom: 08.02.2022
+//#
+//#	Bug Fix:
+//#		-	change return type for function 'ClearPermission'
+//#			from bool to void
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version: 0.03	vom: 28.01.2022
 //#
 //#	Implementation:
@@ -84,7 +92,7 @@ class MyLoconetClass
 			return( m_bPermissionGranted );
 		};
 
-		inline bool ClearPermission( void )
+		inline void ClearPermission( void )
 		{
 			m_bPermissionGranted = false;
 		}
