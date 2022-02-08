@@ -7,6 +7,13 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version: 0.05	vom: 08.02.2022
+//#
+//#	Implementation:
+//#		-	move text to progmem
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version: 0.04	vom: 28.01.2022
 //#
 //#	Bug Fix:
@@ -117,7 +124,6 @@
 
 DebuggingClass	g_clDebugging	= DebuggingClass();
 
-const char g_strTitle[] PROGMEM = "  KeyBox V%d.%02d  ";
 
 //----------------------------------------------------------------------
 //	Variable für das OLED Display
@@ -205,18 +211,18 @@ void DebuggingClass::PrintInfoLine( info_lines_t number )
 	switch( number )
 	{
 		case infoLineFields:
-			g_clDisplay.Print( "\nAct: State Boot\n" );
-			g_clDisplay.Print( "Key: no rel\n" );
-			g_clDisplay.Print( "Btn: released\n" );
-			g_clDisplay.Print( "Srv: unlock pos" );
+			g_clDisplay.Print( F( "\nAct: State Boot\n" ) );
+			g_clDisplay.Print( F( "Key: no rel\n" ) );
+			g_clDisplay.Print( F( "Btn: released\n" ) );
+			g_clDisplay.Print( F( "Srv: unlock pos" ) );
 			break;
 
 		case infoLineInit:
-			g_clDisplay.Print( "\n  Init:\n" );
+			g_clDisplay.Print( F( "\n  Init:\n" ) );
 			break;
 
 		case infoLineLedTest:
-			g_clDisplay.Print( "  LED Test\n" );
+			g_clDisplay.Print( F( "  LED Test\n" ) );
 			break;
 
 		default:
@@ -279,19 +285,19 @@ void DebuggingClass::PrintNotifyMsg( uint16_t address, uint8_t dir )
 	switch( m_NotifyType )
 	{
 		case NT_Sensor:
-			g_clDisplay.Print( "E:Sensor\n" );
+			g_clDisplay.Print( F( "E:Sensor\n" ) );
 			break;
 
 		case NT_Request:
-			g_clDisplay.Print( "E:Switch Reqst\n" );
+			g_clDisplay.Print( F( "E:Switch Reqst\n" ) );
 			break;
 
 		case NT_Report:
-			g_clDisplay.Print( "E:Switch Report\n" );
+			g_clDisplay.Print( F( "E:Switch Report\n" ) );
 			break;
 
 		case NT_State:
-			g_clDisplay.Print( "E:Switch State\n" );
+			g_clDisplay.Print( F( "E:Switch State\n" ) );
 			break;
 	}
 
@@ -318,11 +324,11 @@ void DebuggingClass::PrintLncvDiscoverStart( bool start, uint16_t artikel, uint1
 
 	if( start )
 	{
-		g_clDisplay.Print( "LNCV Prog Start\n" );
+		g_clDisplay.Print( F( "LNCV Prog Start\n" ) );
 	}
 	else
 	{
-		g_clDisplay.Print( "LNCV Discover\n" );
+		g_clDisplay.Print( F( "LNCV Discover\n" ) );
 	}
 	
 	sprintf( g_chDebugString, "AR%5u AD%5u", artikel, address );
@@ -336,7 +342,7 @@ void DebuggingClass::PrintLncvDiscoverStart( bool start, uint16_t artikel, uint1
 void DebuggingClass::PrintLncvStop()
 {
 	SetLncvMsgPos();
-	g_clDisplay.Print( "LNCV Prog Stop" );
+	g_clDisplay.Print( F( "LNCV Prog Stop" ) );
 //	sprintf( g_chDebugString, "AR%5u AD%5u", ArtNr, ModuleAddress );
 //	g_clDisplay.Print( g_chDebugString );
 }
@@ -351,11 +357,11 @@ void DebuggingClass::PrintLncvReadWrite( bool doRead, uint16_t address, uint16_t
 
 	if( doRead )
 	{
-		g_clDisplay.Print( "LNCV Read\n" );
+		g_clDisplay.Print( F( "LNCV Read\n" ) );
 	}
 	else
 	{
-		g_clDisplay.Print( "LNCV Write\n" );
+		g_clDisplay.Print( F( "LNCV Write\n" ) );
 	}
 
 	sprintf( g_chDebugString, "AD%5u VA%5u", address, value );
@@ -378,7 +384,7 @@ void DebuggingClass::SetLncvMsgPos( void )
 //
 void DebuggingClass::PrintStorageCheck( uint8_t byte1, uint8_t byte2 )
 {
-	g_clDisplay.Print( "  Check EEPROM:\n" );
+	g_clDisplay.Print( F( "  Check EEPROM:\n" ) );
 	sprintf( g_chDebugString, "  0:0x%02X 1:0x%02X", byte1, byte2 );
 	g_clDisplay.Print( g_chDebugString );
 }
@@ -389,7 +395,7 @@ void DebuggingClass::PrintStorageCheck( uint8_t byte1, uint8_t byte2 )
 //
 void DebuggingClass::PrintStorageDefault( void )
 {
-	g_clDisplay.Print( "\nSet default Adr" );
+	g_clDisplay.Print( F( "\nSet default Adr" ) );
 }
 
 
@@ -398,7 +404,7 @@ void DebuggingClass::PrintStorageDefault( void )
 //
 void DebuggingClass::PrintStorageRead( void )
 {
-	g_clDisplay.Print( "\n  Lese LNCVs\n" );
+	g_clDisplay.Print( F( "\n  Lese LNCVs\n" ) );
 }
 
 
@@ -416,27 +422,32 @@ void DebuggingClass::PrintStatus(	box_state_t	state,
 	switch( state )
 	{
 		case STATE_PERMISSION_GRANTED:
-			g_clDisplay.Print( "Permission" );
+			g_clDisplay.Print( F( "Permission" ) );
 			break;
 
 		case STATE_KEY_OUT_BOOT:
-			g_clDisplay.Print( "Out Boot  " );
+			g_clDisplay.Print( F( "Out Boot  " ) );
 			break;
 
 		case STATE_KEY_OUT:
-			g_clDisplay.Print( "Key Out   " );
+			g_clDisplay.Print( F( "Key Out   " ) );
 			break;
 
 		case STATE_KEY_LOCKED_PRE:
-			g_clDisplay.Print( "Locked Pre" );
+			g_clDisplay.Print( F( "Locked Pre" ) );
 			break;
 
 		case STATE_KEY_LOCKED:
-			g_clDisplay.Print( "Key Locked" );
+			g_clDisplay.Print( F( "Key Locked" ) );
 			break;
 
 		case STATE_KEY_UNLOCKED:
-			g_clDisplay.Print( "Key Unlock" );
+			g_clDisplay.Print( F( "Key Unlock" ) );
+			break;
+		
+		case STATE_POWER_ON:
+		default:
+			g_clDisplay.Print( F( "Unknown   " ) );
 			break;
 	}
 
