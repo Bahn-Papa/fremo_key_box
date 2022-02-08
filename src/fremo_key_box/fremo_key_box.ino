@@ -8,12 +8,20 @@
 
 
 #define VERSION_MAIN	1
-#define	VERSION_MINOR	0
+#define	VERSION_MINOR	1
 
 
 //##########################################################################
 //#
 //#		Version History:
+//#
+//#-------------------------------------------------------------------------
+//#
+//#	Version: 1.1	vom: 08.02.2022
+//#
+//#	Implementation:
+//#		-	add configurable values for servo lock and unlock position
+//#			use these variables to position the servo
 //#
 //#-------------------------------------------------------------------------
 //#

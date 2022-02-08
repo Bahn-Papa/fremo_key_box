@@ -14,6 +14,14 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version: 0.03	vom: 28.02.2022
+//#
+//#	Implementation:
+//#		-	add configurable values for servo lock and unlock position
+//#		-	change variable names to my new naming convention
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version: 0.02	vom: 23.01.2022
 //#
 //#	Implementation:
@@ -64,44 +72,60 @@ class LncvStorageClass
 		//
 		inline uint16_t GetArticleNumber( void )
 		{
-			return( m_ui16ArticleNumber );
+			return( m_uiArticleNumber );
 		};
 
 		//----------------------------------------------------------
 		//
 		inline uint16_t GetModuleAddress( void )
 		{
-			return( m_ui16ModuleAddress );
+			return( m_uiModuleAddress );
 		};
 
 		//----------------------------------------------------------
 		//
 		inline uint16_t GetPermissionAddress( void )
 		{
-			return( m_ui16PermissionAddress );
+			return( m_uiPermissionAddress );
 		};
 
 		//----------------------------------------------------------
 		//
 		inline uint16_t GetKeyStateAddress( void )
 		{
-			return( m_ui16KeyStateAddress );
+			return( m_uiKeyStateAddress );
 		};
 
 		//----------------------------------------------------------
 		//
 		inline uint16_t GetSendDelayTime( void )
 		{
-			return( m_ui16SendDelay );
+			return( m_uiSendDelay );
+		};
+
+		//----------------------------------------------------------
+		//
+		inline uint16_t GetServoLockPosition( void )
+		{
+			return( m_uiServoLockPosition );
+		};
+
+		//----------------------------------------------------------
+		//
+		inline uint16_t GetServoUnlockPosition( void )
+		{
+			return( m_uiServoUnlockPosition );
 		};
 
 	private:
-		uint16_t	m_ui16ArticleNumber;
-		uint16_t	m_ui16ModuleAddress;
-//		uint16_t	m_ui16Configuration;
-		uint16_t	m_ui16PermissionAddress;
-		uint16_t	m_ui16KeyStateAddress;
-		uint16_t	m_ui16SendDelay;
+		uint16_t	m_uiArticleNumber;
+		uint16_t	m_uiModuleAddress;
+//		uint16_t	m_uiConfiguration;
+		uint16_t	m_uiPermissionAddress;
+		uint16_t	m_uiKeyStateAddress;
+		uint16_t	m_uiSendDelay;
+		uint16_t	m_uiServoLockPosition;
+		uint16_t	m_uiServoUnlockPosition;
 };
 
 

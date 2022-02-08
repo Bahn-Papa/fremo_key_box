@@ -11,6 +11,14 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version: 0.03	vom: 28.02.2022
+//#
+//#	Implementation:
+//#		-	add configurable values for servo lock and unlock position
+//#		-	change variable names to my new naming convention
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version: 0.02	vom: 23.01.2022
 //#
 //#	Implementation:
@@ -74,13 +82,15 @@ LncvStorageClass	g_clLncvStorage = LncvStorageClass();
 #define LNCV_ADR_ARTIKEL_NUMMER			1
 #define LNCV_ADR_CONFIGURATION			2
 #define LNCV_ADR_SEND_DELAY				3
+#define LNCV_ADR_SERVO_LOCK_POSITION	4
+#define LNCV_ADR_SERVO_UNLOCK_POSITION	5
 
 
 //----------------------------------------------------------------------
 //	address definitions for messages
 //
-#define	LNCV_ADR_KEY_PERMISSION			4
-#define	LNCV_ADR_KEY_STATE				5
+#define	LNCV_ADR_KEY_PERMISSION			6
+#define	LNCV_ADR_KEY_STATE				7
 
 
 //----------------------------------------------------------------------
@@ -88,6 +98,13 @@ LncvStorageClass	g_clLncvStorage = LncvStorageClass();
 //
 #define	MASK_KEY_PERMISSION				0x01
 #define	MASK_KEY_STATE					0x02
+
+
+//---------------------------------------------------------------------
+//	Servo default position values
+//
+#define SERVO_LOCK_POS		3999	//	2 ms pulse
+#define SERVO_UNLOCK_POS	1999	//	1 ms pulse
 
 
 //----------------------------------------------------------------------
@@ -136,12 +153,14 @@ void LncvStorageClass::CheckEEPROM( void )
 		g_clDebugging.PrintStorageDefault();
 #endif
 
-		WriteLNCV( LNCV_ADR_MODULE_ADDRESS, 0x0001 );				//	default Module Adress 0x0001
-		WriteLNCV( LNCV_ADR_ARTIKEL_NUMMER,	ARTIKEL_NUMMER );		//	Artikel-Nummer
-		WriteLNCV( LNCV_ADR_CONFIGURATION, 0 );						//	default no configuration
-		WriteLNCV( LNCV_ADR_SEND_DELAY, DEFAULT_SEND_DELAY_TIME );	//	Send Delay Timer
-		WriteLNCV( LNCV_ADR_KEY_PERMISSION, 0 );					//	default adr = 0
-		WriteLNCV( LNCV_ADR_KEY_STATE, 0 );							//	default adr = 0
+		WriteLNCV( LNCV_ADR_MODULE_ADDRESS, 0x0001 );
+		WriteLNCV( LNCV_ADR_ARTIKEL_NUMMER,	ARTIKEL_NUMMER );
+		WriteLNCV( LNCV_ADR_CONFIGURATION, 0 );
+		WriteLNCV( LNCV_ADR_SEND_DELAY, DEFAULT_SEND_DELAY_TIME );
+		WriteLNCV( LNCV_ADR_SERVO_LOCK_POSITION, SERVO_LOCK_POS );
+		WriteLNCV( LNCV_ADR_SERVO_UNLOCK_POSITION, SERVO_UNLOCK_POS );
+		WriteLNCV( LNCV_ADR_KEY_PERMISSION, 0 );
+		WriteLNCV( LNCV_ADR_KEY_STATE, 0 );
 	}
 }
 
@@ -160,21 +179,23 @@ void LncvStorageClass::Init( void )
 	//--------------------------------------------------------------
 	//	read config information
 	//
-	m_ui16ArticleNumber		= ReadLNCV( LNCV_ADR_ARTIKEL_NUMMER );
-	m_ui16ModuleAddress		= ReadLNCV( LNCV_ADR_MODULE_ADDRESS );
-//	m_ui16Configuration		= ReadLNCV( LNCV_ADR_CONFIGURATION );
-	m_ui16PermissionAddress	= ReadLNCV( LNCV_ADR_KEY_PERMISSION );
-	m_ui16KeyStateAddress	= ReadLNCV( LNCV_ADR_KEY_STATE );
+	m_uiArticleNumber		= ReadLNCV( LNCV_ADR_ARTIKEL_NUMMER );
+	m_uiModuleAddress		= ReadLNCV( LNCV_ADR_MODULE_ADDRESS );
+//	m_uiConfiguration		= ReadLNCV( LNCV_ADR_CONFIGURATION );
+	m_uiServoLockPosition	= ReadLNCV( LNCV_ADR_SERVO_LOCK_POSITION );
+	m_uiServoUnlockPosition	= ReadLNCV( LNCV_ADR_SERVO_UNLOCK_POSITION );
+	m_uiPermissionAddress	= ReadLNCV( LNCV_ADR_KEY_PERMISSION );
+	m_uiKeyStateAddress		= ReadLNCV( LNCV_ADR_KEY_STATE );
 
 	//--------------------------------------------------------------
 	//	read send delay time
 	//	and make sure it is not shorter than MIN_SEND_DELAY_TIME ms
 	//
-	m_ui16SendDelay = ReadLNCV( LNCV_ADR_SEND_DELAY );
+	m_uiSendDelay = ReadLNCV( LNCV_ADR_SEND_DELAY );
 
-	if( MIN_SEND_DELAY_TIME > m_ui16SendDelay )
+	if( MIN_SEND_DELAY_TIME > m_uiSendDelay )
 	{
-		m_ui16SendDelay = MIN_SEND_DELAY_TIME;
+		m_uiSendDelay = MIN_SEND_DELAY_TIME;
 	}
 }
 
@@ -184,7 +205,7 @@ void LncvStorageClass::Init( void )
 //
 bool LncvStorageClass::IsValidLNCVAddress( uint16_t Adresse )
 {
-	if( (LNCV_ADR_MODULE_ADDRESS <= Adresse) && (LNCV_ADR_KEY_STATE >= Adresse) )
+	if( LNCV_ADR_KEY_STATE >= Adresse )
 	{
 		return( true );
 	}

@@ -12,6 +12,14 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version: 0.08	vom: 08.02.2022
+//#
+//#	Implementation:
+//#		-	the new configurable values for servo positions are used
+//#			now to position the servo
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version: 0.07	vom: 28.01.2022
 //#
 //#	Implementation:
@@ -78,6 +86,7 @@
 
 #include "io_control.h"
 #include "debounce.h"
+#include "lncv_storage.h"
 
 
 //==========================================================================
@@ -87,13 +96,6 @@
 //==========================================================================
 
 #define	INIT_READ_INPUT_COUNT	6
-
-
-//---------------------------------------------------------------------
-//	Servo
-//
-#define SERVO_LOCK_POS		3999	//	2 ms pulse
-#define SERVO_UNLOCK_POS	1999	//	1 ms pulse
 
 
 //---------------------------------------------------------------------
@@ -260,12 +262,12 @@ void IO_ControlClass::Init( void )
 	//	set servo to unlock position
 	//	may be the key is not inside of the key box
 	//
-	OCR3A   = SERVO_UNLOCK_POS;		//	Servo to unlock position
-	sbi( DDRC, PC6 );				//	set pin to output
+	OCR3A   = g_clLncvStorage.GetServoUnlockPosition();
+	sbi( DDRC, PC6 );			//	set pin to output
 
 	sei();
 
-	sbi( TCCR3B, CS31 );			//	Timer starten (set prescaler to 8)
+	sbi( TCCR3B, CS31 );		//	Timer starten (set prescaler to 8)
 
 	//----	start read timer  --------------------------------------
 	g_ulMillisReadInputs = millis() + cg_ulInterval_20_ms;
@@ -373,7 +375,7 @@ void IO_ControlClass::LedOff( void )
 //
 void IO_ControlClass::SetServoToLockPosition( void )
 {
-	OCR3A = SERVO_LOCK_POS;
+	OCR3A = g_clLncvStorage.GetServoLockPosition();
 
 	g_bServoInLockPos = true;
 }
@@ -385,7 +387,7 @@ void IO_ControlClass::SetServoToLockPosition( void )
 //
 void IO_ControlClass::SetServoToUnlockPosition( void )
 {
-	OCR3A = SERVO_UNLOCK_POS;
+	OCR3A = g_clLncvStorage.GetServoUnlockPosition();
 
 	g_bServoInLockPos = false;
 }
