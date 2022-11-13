@@ -12,7 +12,14 @@
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 0.08	vom: 08.02.2022
+//#	File version: 9		vom: 13.11.2022
+//#
+//#	Implementation:
+//#		-	red led integrated (LED_ALERT)
+//#
+//#-------------------------------------------------------------------------
+//#
+//#	File version: 8		vom: 08.02.2022
 //#
 //#	Implementation:
 //#		-	the new configurable values for servo positions are used
@@ -20,7 +27,7 @@
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 0.07	vom: 28.01.2022
+//#	File version: 7		vom: 28.01.2022
 //#
 //#	Implementation:
 //#		-	change the handling of 'Permission Granted'
@@ -29,14 +36,14 @@
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 0.06	vom: 28.01.2022
+//#	File version: 6		vom: 28.01.2022
 //#
 //#	Bug Fix:
 //#		-	correct handling of LED (on, off, flash)
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 0.05	vom: 28.01.2022
+//#	File version: 5		vom: 28.01.2022
 //#
 //#	Implementation:
 //#		-	add function IsPermissionGranted()
@@ -44,7 +51,7 @@
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 0.04	vom: 28.01.2022
+//#	File version: 4		vom: 28.01.2022
 //#
 //#	Implementation:
 //#		-	correct the settings for timer 3 to control the servo
@@ -52,21 +59,21 @@
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 0.03	vom: 27.01.2022
+//#	File version: 3		vom: 27.01.2022
 //#
 //#	Implementation:
 //#		-	add I/O handling
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 0.02	vom: 23.01.2022
+//#	File version: 2		vom: 23.01.2022
 //#
 //#	Implementation:
 //#		-	under development
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 0.01	vom: 21.01.2022
+//#	File version: 1		vom: 21.01.2022
 //#
 //#	Implementation:
 //#		-	first version
@@ -123,15 +130,16 @@
 //		PF4		Permission granted (if no LN available)
 //		PF5		not used
 //		PF6		Permission LED
-//		PF7		not used
+//		PF7		Alert LED
 //
 #define BUTTON_RELEASE				PF0
 #define	SWITCH_LOCK_POS				PF1
 #define DEBUG_PERMISSION_GRANTED	PF4
 #define	LED_PERMISSION				PF6
+#define LED_ALERT					PF7
 
-#define PORT_F_FREE_BITS	(_BV( PF5 ) | _BV( PF7 ))
-#define PORT_F_OUTPUTS		 _BV( LED_PERMISSION )
+#define PORT_F_FREE_BITS	 _BV( PF5 )
+#define PORT_F_OUTPUTS		(_BV( LED_PERMISSION ) | _BV( LED_ALERT ))
 #define PORT_F_INPUTS		(_BV( PF0 ) | _BV( PF1 ) | _BV( PF4 ))
 
 
@@ -236,6 +244,8 @@ void IO_ControlClass::Init( void )
 	DDRF	|=  PORT_F_OUTPUTS;		//	configure as Output
 	PORTF	&= ~PORT_F_OUTPUTS;		//	switch off
 
+	LedOff();
+
 	//--------------------------------------------------------------
 	//	set timer 3 for servo control
 	//
@@ -322,24 +332,35 @@ void IO_ControlClass::ReadInputs( void )
 			if( m_bLedFast )
 			{
 				g_ulMillisFlash = cg_ulInterval_100_ms;
+
+				if( bit_is_set( PINF, LED_ALERT ) )
+				{
+					//----	switch LED on  ----
+					cbi( PORTF, LED_ALERT );
+				}
+				else
+				{
+					//----	switch LED off  ----
+					sbi( PORTF, LED_ALERT );
+				}
 			}
 			else
 			{
 				g_ulMillisFlash = cg_ulInterval_500_ms;
+
+				if( bit_is_set( PINF, LED_PERMISSION ) )
+				{
+					//----	switch LED on  ----
+					cbi( PORTF, LED_PERMISSION );
+				}
+				else
+				{
+					//----	switch LED off  ----
+					sbi( PORTF, LED_PERMISSION );
+				}
 			}
 
 			g_ulMillisFlash += millis();
-
-			if( IsLedOn() )
-			{
-				//----	switch LED off  ----
-				cbi( PORTF, LED_PERMISSION );
-			}
-			else
-			{
-				//----	switch LED on  ----
-				sbi( PORTF, LED_PERMISSION );
-			}
 		}
 	}
 }
@@ -353,7 +374,7 @@ void IO_ControlClass::LedOn( void )
 	m_bLedFast	= false;
 	m_bLedSlow	= false;
 
-	sbi( PORTF, LED_PERMISSION );
+	cbi( PORTF, LED_PERMISSION );
 }
 
 
@@ -365,7 +386,8 @@ void IO_ControlClass::LedOff( void )
 	m_bLedFast	= false;
 	m_bLedSlow	= false;
 
-	cbi( PORTF, LED_PERMISSION );
+	sbi( PORTF, LED_ALERT );
+	sbi( PORTF, LED_PERMISSION );
 }
 
 
@@ -399,7 +421,7 @@ void IO_ControlClass::SetServoToUnlockPosition( void )
 //
 bool IO_ControlClass::IsLedOn( void )
 {
-	return( bit_is_set( PINF, LED_PERMISSION ) );
+	return( !bit_is_set( PINF, LED_PERMISSION ) );
 //	return( false );
 }
 
