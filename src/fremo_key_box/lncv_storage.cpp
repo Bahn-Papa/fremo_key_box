@@ -11,7 +11,21 @@
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 0.03	vom: 28.02.2022
+//#	File version:	4		from: 13.11.2022
+//#
+//#	Implementation:
+//#		-	move definitions from .cpp file to .h file
+//#		-	add version number into EEPROM
+//#		-	remove functions
+//#				GetServoLockPosition()
+//#				GetServoUnlockPosition()
+//#			remove variables 
+//#				m_uiServoLockPosition
+//#				m_uiServoUnlockPosition
+//#
+//#-------------------------------------------------------------------------
+//#
+//#	File version:	3		from: 28.02.2022
 //#
 //#	Implementation:
 //#		-	add configurable values for servo lock and unlock position
@@ -19,14 +33,14 @@
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 0.02	vom: 23.01.2022
+//#	File version:	2		from: 23.01.2022
 //#
 //#	Implementation:
 //#		-	under development
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version:	 0.01	Date: 21.01.2022
+//#	File version:	1		from: 21.01.2022
 //#
 //#	Implementation:
 //#		-	first version
@@ -71,43 +85,6 @@ LncvStorageClass	g_clLncvStorage = LncvStorageClass();
 //==========================================================================
 
 //----------------------------------------------------------------------
-//	my artikle number
-#define ARTIKEL_NUMMER	1511
-
-
-//----------------------------------------------------------------------
-//	address definitions for config informations
-//
-#define LNCV_ADR_MODULE_ADDRESS			0
-#define LNCV_ADR_ARTIKEL_NUMMER			1
-#define LNCV_ADR_CONFIGURATION			2
-#define LNCV_ADR_SEND_DELAY				3
-#define LNCV_ADR_SERVO_LOCK_POSITION	4
-#define LNCV_ADR_SERVO_UNLOCK_POSITION	5
-
-
-//----------------------------------------------------------------------
-//	address definitions for messages
-//
-#define	LNCV_ADR_KEY_PERMISSION			6
-#define	LNCV_ADR_KEY_STATE				7
-
-
-//----------------------------------------------------------------------
-//	mask definitions related to messages
-//
-#define	MASK_KEY_PERMISSION				0x01
-#define	MASK_KEY_STATE					0x02
-
-
-//---------------------------------------------------------------------
-//	Servo default position values
-//
-#define SERVO_LOCK_POS		3999	//	2 ms pulse
-#define SERVO_UNLOCK_POS	1999	//	1 ms pulse
-
-
-//----------------------------------------------------------------------
 //	delay times
 //
 #define	MIN_SEND_DELAY_TIME			   5
@@ -134,16 +111,18 @@ LncvStorageClass::LncvStorageClass()
 //	If so, then the EEPROM will be filled with default config infos
 //	and all addresses will be set to zero.
 //
-void LncvStorageClass::CheckEEPROM( void )
+void LncvStorageClass::CheckEEPROM( uint16_t uiVersionNumber )
 {
-	uint8_t	byte0 = eeprom_read_byte( (uint8_t *)0 );
-	uint8_t	byte1 = eeprom_read_byte( (uint8_t *)1 );
+	uint8_t		idx;
+	uint16_t	uiVersion;
+	uint16_t	uiAddress	= ReadLNCV( LNCV_ADR_MODULE_ADDRESS );
+	uint16_t	uiArticle	= ReadLNCV( LNCV_ADR_ARTIKEL_NUMMER );
 
 #ifdef DEBUGGING_PRINTOUT
-	g_clDebugging.PrintStorageCheck( byte0, byte1 );
+	g_clDebugging.PrintStorageCheck( uiAddress, uiArticle );
 #endif
 
-	if( (0xFF == byte0) && (0xFF == byte1) )
+	if( (0xFFFF == uiAddress) || (0x0000 == uiAddress) )
 	{
 		//----------------------------------------------------------
 		//	the EEPROM is empty, so write default config info ...
@@ -155,12 +134,18 @@ void LncvStorageClass::CheckEEPROM( void )
 
 		WriteLNCV( LNCV_ADR_MODULE_ADDRESS, 0x0001 );
 		WriteLNCV( LNCV_ADR_ARTIKEL_NUMMER,	ARTIKEL_NUMMER );
+		WriteLNCV( LNCV_ADR_VERSION_NUMBER, uiVersionNumber );
+
 		WriteLNCV( LNCV_ADR_CONFIGURATION, 0 );
 		WriteLNCV( LNCV_ADR_SEND_DELAY, DEFAULT_SEND_DELAY_TIME );
 		WriteLNCV( LNCV_ADR_SERVO_LOCK_POSITION, SERVO_LOCK_POS );
 		WriteLNCV( LNCV_ADR_SERVO_UNLOCK_POSITION, SERVO_UNLOCK_POS );
 		WriteLNCV( LNCV_ADR_KEY_PERMISSION, 0 );
 		WriteLNCV( LNCV_ADR_KEY_STATE, 0 );
+	}
+	else
+	{
+		WriteLNCV( LNCV_ADR_VERSION_NUMBER, uiVersionNumber );
 	}
 }
 
@@ -182,8 +167,6 @@ void LncvStorageClass::Init( void )
 	m_uiArticleNumber		= ReadLNCV( LNCV_ADR_ARTIKEL_NUMMER );
 	m_uiModuleAddress		= ReadLNCV( LNCV_ADR_MODULE_ADDRESS );
 //	m_uiConfiguration		= ReadLNCV( LNCV_ADR_CONFIGURATION );
-	m_uiServoLockPosition	= ReadLNCV( LNCV_ADR_SERVO_LOCK_POSITION );
-	m_uiServoUnlockPosition	= ReadLNCV( LNCV_ADR_SERVO_UNLOCK_POSITION );
 	m_uiPermissionAddress	= ReadLNCV( LNCV_ADR_KEY_PERMISSION );
 	m_uiKeyStateAddress		= ReadLNCV( LNCV_ADR_KEY_STATE );
 
@@ -234,13 +217,19 @@ uint16_t LncvStorageClass::ReadLNCV( uint16_t Adresse )
 //**********************************************************************
 //	WriteLNCV
 //
-void LncvStorageClass::WriteLNCV( uint16_t Adresse, uint16_t Value )
+void LncvStorageClass::WriteLNCV( uint16_t Address, uint16_t Value )
 {
 	//--------------------------------------------------------------
 	//	because of uint16 values the address has to be shifted
 	//	by '1' (this will double the address).
 	//
-	eeprom_write_word( (uint16_t *)(Adresse << 1), Value );
+	uint16_t *	puiAdr	= (uint16_t *)(Address << 1);
+	uint16_t	uiValue	= eeprom_read_word( puiAdr );
+	
+	if( uiValue != Value )
+	{
+		eeprom_write_word( puiAdr, Value );
+	}
 }
 
 

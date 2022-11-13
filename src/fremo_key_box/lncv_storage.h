@@ -14,7 +14,21 @@
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 0.03	vom: 28.02.2022
+//#	File version:	4		from: 13.11.2022
+//#
+//#	Implementation:
+//#		-	move definitions from .cpp file to .h file
+//#		-	add version number into EEPROM
+//#		-	remove functions
+//#				GetServoLockPosition()
+//#				GetServoUnlockPosition()
+//#			remove variables 
+//#				m_uiServoLockPosition
+//#				m_uiServoUnlockPosition
+//#
+//#-------------------------------------------------------------------------
+//#
+//#	File version:	3		from: 28.02.2022
 //#
 //#	Implementation:
 //#		-	add configurable values for servo lock and unlock position
@@ -22,14 +36,14 @@
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 0.02	vom: 23.01.2022
+//#	File version:	2		from: 23.01.2022
 //#
 //#	Implementation:
 //#		-	under development
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version:	 0.01	Date: 21.01.2022
+//#	File version:	1		from: 21.01.2022
 //#
 //#	Implementation:
 //#		-	first version
@@ -44,6 +58,50 @@
 //==========================================================================
 
 #include "compile_options.h"
+
+
+//==========================================================================
+//
+//		D E F I N I T I O N S
+//
+//==========================================================================
+
+//----------------------------------------------------------------------
+//	my artikle number
+#define ARTIKEL_NUMMER	1511
+
+
+//----------------------------------------------------------------------
+//	address definitions for config informations
+//
+#define LNCV_ADR_MODULE_ADDRESS				0
+#define LNCV_ADR_ARTIKEL_NUMMER				1
+#define LNCV_ADR_VERSION_NUMBER				2
+#define LNCV_ADR_CONFIGURATION				3
+#define LNCV_ADR_SEND_DELAY					4
+#define LNCV_ADR_SERVO_LOCK_POSITION		5
+#define LNCV_ADR_SERVO_UNLOCK_POSITION		6
+
+
+//----------------------------------------------------------------------
+//	address definitions for messages
+//
+#define	LNCV_ADR_KEY_PERMISSION				7
+#define	LNCV_ADR_KEY_STATE					8
+
+
+//----------------------------------------------------------------------
+//	mask definitions related to messages
+//
+#define	MASK_KEY_PERMISSION				0x01
+#define	MASK_KEY_STATE					0x02
+
+
+//---------------------------------------------------------------------
+//	Servo default position values
+//
+#define SERVO_LOCK_POS		3999	//	2 ms pulse
+#define SERVO_UNLOCK_POS	1999	//	1 ms pulse
 
 
 #if defined( COMMAND_CONNECTION_LOCONET )
@@ -62,7 +120,7 @@ class LncvStorageClass
 
 		//----------------------------------------------------------
 		//
-		void		CheckEEPROM( void );
+		void		CheckEEPROM( uint16_t uiVersionNumber );
 		void		Init( void );
 		bool		IsValidLNCVAddress( uint16_t Adresse );
 		uint16_t	ReadLNCV(  uint16_t Adresse );
@@ -103,19 +161,6 @@ class LncvStorageClass
 			return( m_uiSendDelay );
 		};
 
-		//----------------------------------------------------------
-		//
-		inline uint16_t GetServoLockPosition( void )
-		{
-			return( m_uiServoLockPosition );
-		};
-
-		//----------------------------------------------------------
-		//
-		inline uint16_t GetServoUnlockPosition( void )
-		{
-			return( m_uiServoUnlockPosition );
-		};
 
 	private:
 		uint16_t	m_uiArticleNumber;
@@ -124,8 +169,6 @@ class LncvStorageClass
 		uint16_t	m_uiPermissionAddress;
 		uint16_t	m_uiKeyStateAddress;
 		uint16_t	m_uiSendDelay;
-		uint16_t	m_uiServoLockPosition;
-		uint16_t	m_uiServoUnlockPosition;
 };
 
 
