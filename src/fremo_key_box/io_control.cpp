@@ -12,14 +12,21 @@
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 9		vom: 13.11.2022
+//#	File version:	10		from: 13.11.2022
+//#
+//#	Implementation:
+//#		-	change the way to get the servo positions
+//#
+//#-------------------------------------------------------------------------
+//#
+//#	File version:	9		from: 13.11.2022
 //#
 //#	Implementation:
 //#		-	red led integrated (LED_ALERT)
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 8		vom: 08.02.2022
+//#	File version:	8		from: 08.02.2022
 //#
 //#	Implementation:
 //#		-	the new configurable values for servo positions are used
@@ -27,7 +34,7 @@
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 7		vom: 28.01.2022
+//#	File version:	7		from: 28.01.2022
 //#
 //#	Implementation:
 //#		-	change the handling of 'Permission Granted'
@@ -36,14 +43,14 @@
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 6		vom: 28.01.2022
+//#	File version:	6		from: 28.01.2022
 //#
 //#	Bug Fix:
 //#		-	correct handling of LED (on, off, flash)
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 5		vom: 28.01.2022
+//#	File version:	5		from: 28.01.2022
 //#
 //#	Implementation:
 //#		-	add function IsPermissionGranted()
@@ -51,7 +58,7 @@
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 4		vom: 28.01.2022
+//#	File version:	4		from: 28.01.2022
 //#
 //#	Implementation:
 //#		-	correct the settings for timer 3 to control the servo
@@ -59,21 +66,21 @@
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 3		vom: 27.01.2022
+//#	File version:	3		from: 27.01.2022
 //#
 //#	Implementation:
 //#		-	add I/O handling
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 2		vom: 23.01.2022
+//#	File version:	2		from: 23.01.2022
 //#
 //#	Implementation:
 //#		-	under development
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 1		vom: 21.01.2022
+//#	File version:	1		from: 21.01.2022
 //#
 //#	Implementation:
 //#		-	first version
@@ -272,7 +279,7 @@ void IO_ControlClass::Init( void )
 	//	set servo to unlock position
 	//	may be the key is not inside of the key box
 	//
-	OCR3A   = g_clLncvStorage.GetServoUnlockPosition();
+	OCR3A   = g_clLncvStorage.ReadLNCV( LNCV_ADR_SERVO_UNLOCK_POSITION );
 	sbi( DDRC, PC6 );			//	set pin to output
 
 	sei();
@@ -397,7 +404,7 @@ void IO_ControlClass::LedOff( void )
 //
 void IO_ControlClass::SetServoToLockPosition( void )
 {
-	OCR3A = g_clLncvStorage.GetServoLockPosition();
+	OCR3A = g_clLncvStorage.ReadLNCV( LNCV_ADR_SERVO_LOCK_POSITION );
 
 	g_bServoInLockPos = true;
 }
@@ -409,7 +416,7 @@ void IO_ControlClass::SetServoToLockPosition( void )
 //
 void IO_ControlClass::SetServoToUnlockPosition( void )
 {
-	OCR3A = g_clLncvStorage.GetServoUnlockPosition();
+	OCR3A = g_clLncvStorage.ReadLNCV( LNCV_ADR_SERVO_UNLOCK_POSITION );
 
 	g_bServoInLockPos = false;
 }
