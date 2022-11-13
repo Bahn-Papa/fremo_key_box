@@ -10,6 +10,8 @@
 #define VERSION_MAIN	1
 #define	VERSION_MINOR	2
 
+#define VERSION_NUMBER		((VERSION_MAIN * 100) + VERSION_MINOR)
+
 
 //##########################################################################
 //#
@@ -143,7 +145,7 @@ void setup()
 	delay( 200 );
 
 	//----	LNCV: Check and Init  ----------------------------------
-	g_clLncvStorage.CheckEEPROM();
+	g_clLncvStorage.CheckEEPROM( VERSION_NUMBER );
 	
 	delay( 500 );
 

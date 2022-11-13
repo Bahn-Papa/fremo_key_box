@@ -93,7 +93,7 @@ class DebuggingClass
 		void PrintLncvStop();
 		void PrintLncvReadWrite( bool doRead, uint16_t address, uint16_t value );
 
-		void PrintStorageCheck( uint8_t byte1, uint8_t byte2 );
+		void PrintStorageCheck( uint16_t uiAddress, uint16_t uiArticle );
 		void PrintStorageDefault( void );
 		void PrintStorageRead( void );
 		
