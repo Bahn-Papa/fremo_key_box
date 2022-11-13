@@ -9,7 +9,17 @@
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 0.04	vom: 08.02.2022
+//#	File version:	3		from: 28.01.2022
+//#
+//#	Implementation:
+//#		-	add member variables
+//#				m_uiKeyStateAddress
+//#				m_uiPermissionAddress
+//#				m_uiSendDelay
+//#
+//#-------------------------------------------------------------------------
+//#
+//#	File version:	4		from: 08.02.2022
 //#
 //#	Bug Fix:
 //#		-	change return type for function 'ClearPermission'
@@ -17,7 +27,7 @@
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 0.03	vom: 28.01.2022
+//#	File version:	3		from: 28.01.2022
 //#
 //#	Implementation:
 //#		-	change the handling of 'Permission Granted'
@@ -26,14 +36,14 @@
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 0.02	vom: 23.01.2022
+//#	File version:	2		from: 23.01.2022
 //#
 //#	Implementation:
 //#		-	under development
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version:	 0.01	vom: 21.01.2022
+//#	File version:	1		from: 21.01.2022
 //#
 //#	Implementation:
 //#		-	Initial version
@@ -98,8 +108,11 @@ class MyLoconetClass
 		}
 
 	private:
-		bool	m_bIsProgMode;
-		bool	m_bPermissionGranted;
+		bool		m_bIsProgMode;
+		bool		m_bPermissionGranted;
+		uint16_t	m_uiPermissionAddress;
+		uint16_t	m_uiKeyStateAddress;
+		uint16_t	m_uiSendDelay;
 };
 
 

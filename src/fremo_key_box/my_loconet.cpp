@@ -6,14 +6,25 @@
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 0.02	vom: 23.01.2022
+//#	File version:	3		from: 13.11.2022
+//#
+//#	Implementation:
+//#		-	add member variables
+//#				m_uiKeyStateAddress
+//#				m_uiPermissionAddress
+//#				m_uiSendDelay
+//#		-	add handling of new member variables
+//#
+//#-------------------------------------------------------------------------
+//#
+//#	File version:	2		from: 23.01.2022
 //#
 //#	Implementation:
 //#		-	under development
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version:	 0.01	vom: 21.01.2022
+//#	File version:	1		from: 21.01.2022
 //#
 //#	Implementation:
 //#		-	Initial version
@@ -67,6 +78,9 @@ MyLoconetClass	 g_clMyLoconet		= MyLoconetClass();
 LocoNetCVClass	 g_clLNCV;
 lnMsg			*g_pLnPacket;
 
+uint16_t	g_uiArticleNumber;
+uint16_t	g_uiModuleAddress;
+
 
 //==========================================================================
 //
@@ -96,6 +110,13 @@ void MyLoconetClass::Init( void )
 {
 	m_bIsProgMode			= false;
 	m_bPermissionGranted	= false;
+
+	g_uiArticleNumber		= g_clLncvStorage.ReadLNCV( LNCV_ADR_ARTIKEL_NUMMER );
+	g_uiModuleAddress		= g_clLncvStorage.ReadLNCV( LNCV_ADR_MODULE_ADDRESS );
+
+	m_uiPermissionAddress	= g_clLncvStorage.ReadLNCV( LNCV_ADR_KEY_PERMISSION );
+	m_uiKeyStateAddress		= g_clLncvStorage.ReadLNCV( LNCV_ADR_KEY_STATE );
+	m_uiSendDelay			= g_clLncvStorage.ReadLNCV( LNCV_ADR_SEND_DELAY );
 
 	LocoNet.init( LOCONET_TX_PIN );
 }
@@ -130,7 +151,7 @@ void MyLoconetClass::CheckForMessage( void )
 //
 void MyLoconetClass::LoconetReceived( uint16_t adr, uint8_t dir )
 {
-	if( g_clLncvStorage.GetPermissionAddress() == adr )
+	if( m_uiPermissionAddress == adr )
 	{
 		if( SWITCH_TO_RED == dir )
 		{
@@ -150,7 +171,7 @@ void MyLoconetClass::LoconetReceived( uint16_t adr, uint8_t dir )
 //
 void MyLoconetClass::SendKeyRemoved( bool bRemoved )
 {
-	uint16_t	adr		= g_clLncvStorage.GetKeyStateAddress();
+	uint16_t	adr		= m_uiKeyStateAddress;
 	uint8_t		dir;
 
 	//---------------------------------------------------------
@@ -175,7 +196,7 @@ void MyLoconetClass::SendKeyRemoved( bool bRemoved )
 
 		//----	wait befor sending the next message  ------
 		//
-		delay( g_clLncvStorage.GetSendDelayTime() );
+		delay( m_uiSendDelay );
 
 		LocoNet.requestSwitch( adr, 0, dir );
 	}
@@ -233,8 +254,8 @@ void notifySwitchState( uint16_t Address, uint8_t /* Output */, uint8_t Directio
 //
 int8_t notifyLNCVdiscover( uint16_t &ArtNr, uint16_t &ModuleAddress )
 {
-	ArtNr			= g_clLncvStorage.GetArticleNumber();
-	ModuleAddress	= g_clLncvStorage.GetModuleAddress();
+	ArtNr			 = g_uiArticleNumber;
+	ModuleAddress	 = g_uiModuleAddress;
 
 	g_clMyLoconet.SetProgMode( true );
 
@@ -254,17 +275,17 @@ int8_t notifyLNCVprogrammingStart( uint16_t &ArtNr, uint16_t &ModuleAddress )
 {
 	int8_t retval = -1;		//	default: ignore request
 	
-	if( g_clLncvStorage.GetArticleNumber() == ArtNr )
+	if( g_uiArticleNumber == ArtNr )
 	{
 		if( 0xFFFF == ModuleAddress )
 		{
 			//----	broadcast, so give Module Address back  --------
 			g_clMyLoconet.SetProgMode( true );
 
-			ModuleAddress	= g_clLncvStorage.GetModuleAddress();
+			ModuleAddress	= g_uiModuleAddress;
 			retval			= LNCV_LACK_OK;
 		}
-		else if( g_clLncvStorage.GetModuleAddress() == ModuleAddress )
+		else if( ModuleAddress == g_uiModuleAddress )
 		{
 			//----  that's for me, so process it  ------------------
 			g_clMyLoconet.SetProgMode( true );
@@ -293,8 +314,8 @@ void notifyLNCVprogrammingStop( uint16_t ArtNr, uint16_t ModuleAddress )
 
 	if( g_clMyLoconet.IsProgMode() )
 	{
-		if( 	(g_clLncvStorage.GetArticleNumber() == ArtNr)
-			&&	(g_clLncvStorage.GetModuleAddress() == ModuleAddress) )
+		if( 	(ArtNr			== g_uiArticleNumber)
+			&&	(ModuleAddress	== g_uiModuleAddress) )
 		{
 			//----	for me, so switch prog mode off  ---------------
 			g_clMyLoconet.SetProgMode( false );
@@ -311,7 +332,7 @@ int8_t notifyLNCVread( uint16_t ArtNr, uint16_t Address, uint16_t, uint16_t &Val
 {
 	int8_t retval = -1;		//	default: ignore request
 
-	if( g_clMyLoconet.IsProgMode() && (g_clLncvStorage.GetArticleNumber() == ArtNr) )
+	if( g_clMyLoconet.IsProgMode() && (ArtNr == g_uiArticleNumber) )
 	{
 		if( g_clLncvStorage.IsValidLNCVAddress( Address ) )
 		{
@@ -340,7 +361,7 @@ int8_t notifyLNCVwrite( uint16_t ArtNr, uint16_t Address, uint16_t Value )
 {
 	int8_t retval = -1;		//	default: ignore request
 
-	if( g_clMyLoconet.IsProgMode() && (g_clLncvStorage.GetArticleNumber() == ArtNr) )
+	if( g_clMyLoconet.IsProgMode() && (ArtNr == g_uiArticleNumber) )
 	{
 		if( g_clLncvStorage.IsValidLNCVAddress( Address ) )
 		{

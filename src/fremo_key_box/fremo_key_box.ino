@@ -4,11 +4,16 @@
 //#
 //#	This program controls the hardware fremo_key_box.
 //#
+//#-------------------------------------------------------------------------
+//#
+//#	Arduino IDE settings:
+//#		Tools/Board		Leonardo
+//#
 //##########################################################################
 
 
 #define VERSION_MAIN	1
-#define	VERSION_MINOR	2
+#define	VERSION_MINOR	3
 
 #define VERSION_NUMBER		((VERSION_MAIN * 100) + VERSION_MINOR)
 
@@ -16,6 +21,13 @@
 //##########################################################################
 //#
 //#		Version History:
+//#
+//#-------------------------------------------------------------------------
+//#
+//#	Version: 1.3	vom: 13.11.2022
+//#
+//#	Implementation:
+//#		-	streamlining lncv_storage
 //#
 //#-------------------------------------------------------------------------
 //#

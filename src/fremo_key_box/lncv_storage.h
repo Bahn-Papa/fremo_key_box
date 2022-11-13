@@ -14,6 +14,20 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version:	5		from: 13.11.2022
+//#
+//#	Implementation:
+//#		-	remove functions
+//#				GetKeyStateAddress()
+//#				GetPermissionAddress()
+//#				GetSendDelayTime()
+//#			remove variables
+//#				m_uiKeyStateAddress
+//#				m_uiPermissionAddress
+//#				m_uiSendDelay
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version:	4		from: 13.11.2022
 //#
 //#	Implementation:
@@ -126,49 +140,9 @@ class LncvStorageClass
 		uint16_t	ReadLNCV(  uint16_t Adresse );
 		void		WriteLNCV( uint16_t Adresse, uint16_t Value );
 
-		//----------------------------------------------------------
-		//
-		inline uint16_t GetArticleNumber( void )
-		{
-			return( m_uiArticleNumber );
-		};
-
-		//----------------------------------------------------------
-		//
-		inline uint16_t GetModuleAddress( void )
-		{
-			return( m_uiModuleAddress );
-		};
-
-		//----------------------------------------------------------
-		//
-		inline uint16_t GetPermissionAddress( void )
-		{
-			return( m_uiPermissionAddress );
-		};
-
-		//----------------------------------------------------------
-		//
-		inline uint16_t GetKeyStateAddress( void )
-		{
-			return( m_uiKeyStateAddress );
-		};
-
-		//----------------------------------------------------------
-		//
-		inline uint16_t GetSendDelayTime( void )
-		{
-			return( m_uiSendDelay );
-		};
-
 
 	private:
-		uint16_t	m_uiArticleNumber;
-		uint16_t	m_uiModuleAddress;
 //		uint16_t	m_uiConfiguration;
-		uint16_t	m_uiPermissionAddress;
-		uint16_t	m_uiKeyStateAddress;
-		uint16_t	m_uiSendDelay;
 };
 
 
