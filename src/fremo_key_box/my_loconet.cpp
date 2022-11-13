@@ -50,7 +50,7 @@
 //
 //==========================================================================
 
-#define LOCONET_TX_PIN			4
+#define LOCONET_TX_PIN			7
 
 #define SWITCH_TO_RED			0
 #define SWITCH_TO_GREEN			1
