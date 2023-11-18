@@ -6,14 +6,20 @@
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	Arduino IDE settings:
-//#		Tools/Board		Leonardo
+//# board:		Leonardo
+//#	processor:	ATmega32U4, 16 MHz
+//#
+//#-------------------------------------------------------------------------
+//#
+//#	Needed resources:
+//#		LocoNet Library		V 1.1.13
+//#		SimpleOled Library	V 1.2.1
 //#
 //##########################################################################
 
 
 #define VERSION_MAIN	1
-#define	VERSION_MINOR	3
+#define	VERSION_MINOR	4
 
 #define VERSION_NUMBER		((VERSION_MAIN * 100) + VERSION_MINOR)
 
@@ -21,6 +27,14 @@
 //##########################################################################
 //#
 //#		Version History:
+//#
+//#-------------------------------------------------------------------------
+//#
+//#	Version:	1.4		from: 18.11.2023
+//#
+//#	Implementation:
+//#		-	switch to LocoNet library version 1.1.13
+//#		-	switch to SimpleOled library version 1.2.1
 //#
 //#-------------------------------------------------------------------------
 //#

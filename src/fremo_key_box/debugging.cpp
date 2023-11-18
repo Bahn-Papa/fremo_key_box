@@ -7,35 +7,44 @@
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 0.05	vom: 08.02.2022
+//#	File version:	6		from: 18.11.2023
+//#
+//#	Implementation:
+//#		-	switch to SimpleOled library version 1.2.1
+//#			change in function
+//#				Init()
+//#
+//#-------------------------------------------------------------------------
+//#
+//#	File version:	5		from: 08.02.2022
 //#
 //#	Implementation:
 //#		-	move text to progmem
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 0.04	vom: 28.01.2022
+//#	File version:	4		from: 28.01.2022
 //#
 //#	Bug Fix:
 //#		-	correct the output of 'PrintStorageCheck()'
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 0.03	vom: 28.01.2022
+//#	File version:	3		from: 28.01.2022
 //#
 //#	Implementation:
 //#		-	add state machine info to function PrintStatus()
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 0.02	vom: 23.01.2022
+//#	File version:	2		from: 23.01.2022
 //#
 //#	Implementation:
 //#		-	under development
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version:	 0.01	vom: 21.01.2022
+//#	File version:	1		from: 21.01.2022
 //#
 //#	Implementation:
 //#		-	OLED Display
@@ -75,7 +84,7 @@
 
 #include <avr/pgmspace.h>
 #include <Wire.h>
-#include <simple_oled_sh1106.h>
+#include <SimpleOled.h>
 
 #include "debugging.h"
 
@@ -183,7 +192,20 @@ DebuggingClass::DebuggingClass()
 //
 void DebuggingClass::Init( void )
 {
-	g_clDisplay.Init();
+	//------------------------------------------------------------------
+	//	default settings:
+	//		chip type:	ssd1306
+	//		I2C adr:	60 (0x3C)
+	//
+//	g_clDisplay.Init();
+
+	//------------------------------------------------------------------
+	//	alternate settings
+	//		chip type:	sh1106
+	//		I2C adr:	60 (0x3C)
+	//
+	g_clDisplay.Init( CHIP_TYPE_SH1106, DISPLAY_ADDRESS );
+
 	g_clDisplay.Flip( true );
 }
 

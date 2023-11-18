@@ -6,6 +6,13 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version:	4		from: 18.11.2023
+//#
+//#	Implementation:
+//#		-	switch to LocoNet library version 1.1.13
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version:	3		from: 13.11.2022
 //#
 //#	Implementation:
@@ -279,8 +286,11 @@ int8_t notifyLNCVprogrammingStart( uint16_t &ArtNr, uint16_t &ModuleAddress )
 	{
 		if( 0xFFFF == ModuleAddress )
 		{
-			//----	broadcast, so give Module Address back  --------
-			g_clMyLoconet.SetProgMode( true );
+			//------------------------------------------------------
+			//	broadcast, so give Module Address back,
+			//	but don't go into programming mode !!
+			//
+//			g_clMyLoconet.SetProgMode( true );
 
 			ModuleAddress	= g_uiModuleAddress;
 			retval			= LNCV_LACK_OK;
@@ -328,7 +338,7 @@ void notifyLNCVprogrammingStop( uint16_t ArtNr, uint16_t ModuleAddress )
 //	notifyLNCVread
 //----------------------------------------------------------------------
 //
-int8_t notifyLNCVread( uint16_t ArtNr, uint16_t Address, uint16_t, uint16_t &Value )
+int8_t notifyLNCVread( uint16_t ArtNr, uint16_t Address, uint16_t &Value )
 {
 	int8_t retval = -1;		//	default: ignore request
 
