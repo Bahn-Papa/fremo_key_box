@@ -12,6 +12,20 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version:	11		vom: 02.08.2025
+//#
+//#	Implementation:
+//#		-	read servo position at init
+//#			add new member variables
+//#				m_uiLockPos
+//#				m_uiUnlockPos
+//#			change in functions
+//#				Init()
+//#				SetServoToLockPosition()
+//#				SetServoToUnlockPosition()
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version:	10		from: 13.11.2022
 //#
 //#	Implementation:
@@ -212,6 +226,9 @@ IO_ControlClass::IO_ControlClass()
 	g_ulMillisReadInputs	= 0L;
 	g_bServoInLockPos		= false;
 	m_bPermissionGranted	= false;
+	
+	m_uiLockPos				= SERVO_MIDDLE_POS;
+	m_uiUnlockPos			= SERVO_MIDDLE_POS;
 }
 
 
@@ -286,6 +303,11 @@ void IO_ControlClass::Init( void )
 
 	sbi( TCCR3B, CS31 );		//	Timer starten (set prescaler to 8)
 
+	//----	Read servo positions  ----------------------------------
+	//
+	m_uiLockPos		= g_clLncvStorage.ReadLNCV( LNCV_ADR_SERVO_LOCK_POSITION );
+	m_uiUnlockPos	= g_clLncvStorage.ReadLNCV( LNCV_ADR_SERVO_UNLOCK_POSITION );
+
 	//----	start read timer  --------------------------------------
 	g_ulMillisReadInputs = millis() + cg_ulInterval_20_ms;
 
@@ -319,6 +341,7 @@ void IO_ControlClass::ReadInputs( void )
 	//----------------------------------------------------------
 	//	check if 'Permission Granted' is pressed
 	//
+//	if( 0 != g_clPortF.GetKeyState( _BV( DEBUG_PERMISSION_GRANTED ) ) )
 	if( 0 != g_clPortF.GetKeyPress( _BV( DEBUG_PERMISSION_GRANTED ) ) )
 	{
 		m_bPermissionGranted = true;
@@ -404,7 +427,7 @@ void IO_ControlClass::LedOff( void )
 //
 void IO_ControlClass::SetServoToLockPosition( void )
 {
-	OCR3A = g_clLncvStorage.ReadLNCV( LNCV_ADR_SERVO_LOCK_POSITION );
+	OCR3A = m_uiLockPos;
 
 	g_bServoInLockPos = true;
 }
@@ -416,7 +439,7 @@ void IO_ControlClass::SetServoToLockPosition( void )
 //
 void IO_ControlClass::SetServoToUnlockPosition( void )
 {
-	OCR3A = g_clLncvStorage.ReadLNCV( LNCV_ADR_SERVO_UNLOCK_POSITION );
+	OCR3A = m_uiUnlockPos;
 
 	g_bServoInLockPos = false;
 }

@@ -6,21 +6,31 @@
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 0.03	vom: 28.01.2022
+//#	File version:	4		vom: 02.08.2025
+//#
+//#	Bug Fix:
+//#		-	remove the repeatedly sending of key state messages
+//#		-	when key was removed and button released switch off the LED
+//#			changes in function
+//#				CheckState(()
+//#
+//#-------------------------------------------------------------------------
+//#
+//#	File version:	3		vom: 28.01.2022
 //#
 //#	Implementation:
 //#		-	finished the sequence of the state machine
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 0.02	vom: 23.01.2022
+//#	File version:	2		vom: 23.01.2022
 //#
 //#	Implementation:
 //#		-	under development
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 0.01	vom: 21.01.2022
+//#	File version:	1		vom: 21.01.2022
 //#
 //#	Implementation:
 //#		-	initial version
@@ -52,6 +62,8 @@
 //		D E F I N I T I O N S
 //
 //==========================================================================
+
+//#define SEND_KEY_STATE_REPEATEDLY		1
 
 
 //==========================================================================
@@ -131,6 +143,8 @@ box_state_t StateMachineClass::CheckState( void )
 		case STATE_KEY_OUT_BOOT:
 			if( m_eOldState != m_eState )
 			{
+				m_eOldState	= m_eState;
+
 				if( STATE_KEY_OUT_BOOT == m_eState )
 				{
 					g_clControl.LedFast();
@@ -139,14 +153,17 @@ box_state_t StateMachineClass::CheckState( void )
 				g_clMyLoconet.SendKeyRemoved( true );
 
 				m_ulDelayMillis	= millis() + cg_ulInterval_2_s;
-				m_eOldState		= m_eState;
 			}
+
+#ifdef SEND_KEY_STATE_REPEATEDLY
 			else if( millis() > m_ulDelayMillis )
 			{
 				g_clMyLoconet.SendKeyRemoved( true );
 
 				m_ulDelayMillis = millis() + cg_ulInterval_2_s;
 			}
+#endif
+
 			else if( g_clControl.IsKeyIn() )
 			{
 				m_eState = STATE_KEY_LOCKED_PRE;
@@ -160,9 +177,12 @@ box_state_t StateMachineClass::CheckState( void )
 				m_eOldState = m_eState;
 
 				m_ulDelayMillis = millis() + cg_ulInterval_500_ms;
+//				m_ulDelayMillis = millis() + cg_ulInterval_2_s;
 			}
 			else if( millis() > m_ulDelayMillis )
 			{
+				g_clMyLoconet.SendKeyRemoved( false );
+
 				m_eState = STATE_KEY_LOCKED;
 			}
 			break;
@@ -173,18 +193,25 @@ box_state_t StateMachineClass::CheckState( void )
 			{
 				m_eOldState = m_eState;
 
+				g_clControl.ClearPermission();
+				g_clMyLoconet.ClearPermission();
+
 				g_clControl.LedOff();
 				g_clControl.SetServoToLockPosition();
-				g_clMyLoconet.SendKeyRemoved( false );
+//				g_clMyLoconet.SendKeyRemoved( false );
 
 				m_ulDelayMillis = millis() + cg_ulInterval_2_s;
 			}
+
+#ifdef SEND_KEY_STATE_REPEATEDLY
 			else if( millis() > m_ulDelayMillis )
 			{
 				g_clMyLoconet.SendKeyRemoved( false );
 
 				m_ulDelayMillis = millis() + cg_ulInterval_2_s;
 			}
+#endif
+
 			else if(	g_clMyLoconet.IsPermissionGranted()
 					||	g_clControl.IsPermissionGranted()	)
 			{
@@ -227,10 +254,14 @@ box_state_t StateMachineClass::CheckState( void )
 			}
 			else if( !g_clControl.IsButtonPressed() )
 			{
+				g_clMyLoconet.SendKeyRemoved( false );
+
 				m_eState = STATE_KEY_LOCKED;
 			}
 			else if( !g_clControl.IsKeyIn() )
 			{
+				g_clControl.LedOff();
+
 				m_eState = STATE_KEY_OUT;
 			}
 			break;

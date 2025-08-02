@@ -114,8 +114,9 @@
 //---------------------------------------------------------------------
 //	Servo default position values
 //
-#define SERVO_LOCK_POS		3999	//	2 ms pulse
-#define SERVO_UNLOCK_POS	1999	//	1 ms pulse
+#define SERVO_LOCK_POS		3999	//	2.0 ms pulse
+#define SERVO_MIDDLE_POS	2999	//	1.5 ms pulse
+#define SERVO_UNLOCK_POS	1999	//	1.0 ms pulse
 
 
 #if defined( COMMAND_CONNECTION_LOCONET )

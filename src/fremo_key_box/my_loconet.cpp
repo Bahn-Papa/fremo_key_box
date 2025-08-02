@@ -6,6 +6,26 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version:	5		from: 02.08.2025
+//#
+//#	Implementation:
+//#		-	change handling of loconet addresses for switch and sensor
+//#			messages. the info will now consists of an address and code part
+//#			add member variables
+//#				m_devKeyState
+//#				m_devPermission
+//#			remove member variables
+//#				m_uiKeyStateAddress
+//#				m_uiPermissionAddress
+//#			add function
+//#				SetDeviceInfo()
+//#			change in functions
+//#				Init()
+//#				SendKeyRemoved()
+//#				LoconetReceived()
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version:	4		from: 18.11.2023
 //#
 //#	Implementation:
@@ -70,8 +90,13 @@
 
 #define LOCONET_TX_PIN			7
 
-#define SWITCH_TO_RED			0
-#define SWITCH_TO_GREEN			1
+#define	DIR_RED						0
+#define DIR_THROWN					0
+#define DIR_GREEN					1
+#define DIR_CLOSED					1
+
+#define DEVICE_IS_INVERT			0x01
+#define DEVICE_IS_SENSOR			0x02
 
 
 //==========================================================================
@@ -121,11 +146,27 @@ void MyLoconetClass::Init( void )
 	g_uiArticleNumber		= g_clLncvStorage.ReadLNCV( LNCV_ADR_ARTIKEL_NUMMER );
 	g_uiModuleAddress		= g_clLncvStorage.ReadLNCV( LNCV_ADR_MODULE_ADDRESS );
 
-	m_uiPermissionAddress	= g_clLncvStorage.ReadLNCV( LNCV_ADR_KEY_PERMISSION );
-	m_uiKeyStateAddress		= g_clLncvStorage.ReadLNCV( LNCV_ADR_KEY_STATE );
 	m_uiSendDelay			= g_clLncvStorage.ReadLNCV( LNCV_ADR_SEND_DELAY );
 
+	SetDeviceInfo( &m_devPermission, g_clLncvStorage.ReadLNCV( LNCV_ADR_KEY_PERMISSION ) );
+	SetDeviceInfo( &m_devKeyState,   g_clLncvStorage.ReadLNCV( LNCV_ADR_KEY_STATE      ) );
+
 	LocoNet.init( LOCONET_TX_PIN );
+}
+
+
+//**********************************************************************
+//	SetDeviceInfo (private)
+//----------------------------------------------------------------------
+//
+void MyLoconetClass::SetDeviceInfo( device_t *pDevice, uint16_t uiInfo )
+{
+	uint16_t	address	= uiInfo / 10;
+
+	uiInfo -= (address * 10);
+
+	pDevice->m_uiAddress	= address;
+	pDevice->m_bFlags		= (uint8_t)uiInfo;
 }
 
 
@@ -156,17 +197,50 @@ void MyLoconetClass::CheckForMessage( void )
 //	This is done by checking whether the address of the message
 //	matches the stored address.
 //
-void MyLoconetClass::LoconetReceived( uint16_t adr, uint8_t dir )
+void MyLoconetClass::LoconetReceived( bool isSensor, uint16_t adr, uint8_t dir, uint8_t /* output */ )
 {
-	if( m_uiPermissionAddress == adr )
+	bool	bIsGreen	= (dir != DIR_RED);
+
+	//----------------------------------------------------------
+	//	first check if this is one of our addresses
+	//
+	if( adr == m_devPermission.m_uiAddress )
 	{
-		if( SWITCH_TO_RED == dir )
+		//------------------------------------------------------
+		//	yes it is
+		//	then check if we are searching for
+		//	a sensor message ('isSensor' == true) or
+		//	a switch message ('isSensor' == false)
+		//
+		if( isSensor == (m_devPermission.m_bFlags & DEVICE_IS_SENSOR) )
 		{
-			m_bPermissionGranted = false;
-		}
-		else
-		{
-			m_bPermissionGranted = true;
+			//--------------------------------------------------
+			//	we get to this code area only
+			//	if 'isSensor' and the expression
+			//	'm_devXXX.m_usFlags & DEVICE_IS_SENSOR' are both
+			//		true	==>		sensor message
+			//		false	==>		switch message
+			//--------------------------------------------------
+			//	Okay, address and message type are correct
+			//	so process the message ...
+			//
+
+			//--------------------------------------------------
+			//	Check if 'dir' should be inverted
+			//
+			if( 0 == (m_devPermission.m_bFlags & DEVICE_IS_INVERT) )
+			{
+				bIsGreen = !bIsGreen;
+			}
+
+			if( DIR_RED == bIsGreen )
+			{
+				m_bPermissionGranted = false;
+			}
+			else
+			{
+				m_bPermissionGranted = true;
+			}
 		}
 	}
 }
@@ -178,7 +252,7 @@ void MyLoconetClass::LoconetReceived( uint16_t adr, uint8_t dir )
 //
 void MyLoconetClass::SendKeyRemoved( bool bRemoved )
 {
-	uint16_t	adr		= m_uiKeyStateAddress;
+	uint16_t	adr		= m_devKeyState.m_uiAddress;
 	uint8_t		dir;
 
 	//---------------------------------------------------------
@@ -188,24 +262,51 @@ void MyLoconetClass::SendKeyRemoved( bool bRemoved )
 	{
 		if( bRemoved )
 		{
-			dir = SWITCH_TO_RED;
+			dir = DIR_RED;
 		}
 		else
 		{
-			dir = SWITCH_TO_GREEN;
+			dir = DIR_GREEN;
 		}
 
-		LocoNet.requestSwitch( adr, 1, dir );
+		//-----------------------------------------------------
+		//	Check if 'dir' should be inverted
+		//
+		if( 0 == (m_devKeyState.m_bFlags & DEVICE_IS_INVERT) )
+		{
+			dir = !dir;
+		}
+
+		//-----------------------------------------------------
+		//	Check if this should be a sensor
+		//	or a switch message
+		//
+		if( m_devKeyState.m_bFlags & DEVICE_IS_SENSOR )
+		{
+			//----	sensor message  ------------------------------------
+			//
+			LocoNet.reportSensor( adr, dir );
 
 #ifdef DEBUGGING_PRINTOUT
-//		g_clDebugging.PrintReportSwitchMsg( adr, dir );
+//			g_clDebugging.PrintReportSensorMsg( adr, dir );
+#endif
+		}
+		else
+		{
+			//----	switch message  ---------------------------
+			//
+			LocoNet.requestSwitch( adr, 1, dir );
+
+#ifdef DEBUGGING_PRINTOUT
+//			g_clDebugging.PrintReportSwitchMsg( adr, dir );
 #endif
 
-		//----	wait befor sending the next message  ------
-		//
-		delay( m_uiSendDelay );
+			//----	wait befor sending the next message  ------
+			//
+			delay( m_uiSendDelay );
 
-		LocoNet.requestSwitch( adr, 0, dir );
+			LocoNet.requestSwitch( adr, 0, dir );
+		}
 	}
 }
 
@@ -218,38 +319,22 @@ void MyLoconetClass::SendKeyRemoved( bool bRemoved )
 
 
 //**********************************************************************
+//	notifySensor
+//----------------------------------------------------------------------
 //
-void notifySwitchRequest( uint16_t Address, uint8_t /* Output */, uint8_t Direction )
+void notifySensor( uint16_t Address, uint8_t State )
 {
-#ifdef DEBUGGING_PRINTOUT
-	g_clDebugging.PrintNotifyType( NT_Request );
-#endif
-
-	g_clMyLoconet.LoconetReceived( Address, Direction );
+	g_clMyLoconet.LoconetReceived( true, Address, State, 0 );
 }
 
 
 //**********************************************************************
+//	notifySwitchRequest
+//----------------------------------------------------------------------
 //
-void notifySwitchReport( uint16_t Address, uint8_t /* Output */, uint8_t Direction )
+void notifySwitchRequest( uint16_t Address, uint8_t Output, uint8_t Direction )
 {
-#ifdef DEBUGGING_PRINTOUT
-	g_clDebugging.PrintNotifyType( NT_Report );
-#endif
-
-	g_clMyLoconet.LoconetReceived( Address, Direction );
-}
-
-
-//**********************************************************************
-//
-void notifySwitchState( uint16_t Address, uint8_t /* Output */, uint8_t Direction )
-{
-#ifdef DEBUGGING_PRINTOUT
-	g_clDebugging.PrintNotifyType( NT_State );
-#endif
-
-	g_clMyLoconet.LoconetReceived( Address, Direction );
+	g_clMyLoconet.LoconetReceived( false, Address, Direction, Output );
 }
 
 
@@ -264,7 +349,7 @@ int8_t notifyLNCVdiscover( uint16_t &ArtNr, uint16_t &ModuleAddress )
 	ArtNr			 = g_uiArticleNumber;
 	ModuleAddress	 = g_uiModuleAddress;
 
-	g_clMyLoconet.SetProgMode( true );
+//	g_clMyLoconet.SetProgMode( true );
 
 #ifdef DEBUGGING_PRINTOUT
 	g_clDebugging.PrintLncvDiscoverStart( false, ArtNr, ModuleAddress  );
@@ -297,7 +382,10 @@ int8_t notifyLNCVprogrammingStart( uint16_t &ArtNr, uint16_t &ModuleAddress )
 		}
 		else if( ModuleAddress == g_uiModuleAddress )
 		{
-			//----  that's for me, so process it  ------------------
+			//-----------------------------------------------------
+			//	valid article number and valid module address,
+			//	so switch to programming mode
+			//
 			g_clMyLoconet.SetProgMode( true );
 
 			retval	= LNCV_LACK_OK;
@@ -327,7 +415,10 @@ void notifyLNCVprogrammingStop( uint16_t ArtNr, uint16_t ModuleAddress )
 		if( 	(ArtNr			== g_uiArticleNumber)
 			&&	(ModuleAddress	== g_uiModuleAddress) )
 		{
-			//----	for me, so switch prog mode off  ---------------
+			//------------------------------------------------------
+			//	valid article number and valid module address,
+			//	so switch off programming mode
+			//
 			g_clMyLoconet.SetProgMode( false );
 		}
 	}
@@ -375,7 +466,17 @@ int8_t notifyLNCVwrite( uint16_t ArtNr, uint16_t Address, uint16_t Value )
 	{
 		if( g_clLncvStorage.IsValidLNCVAddress( Address ) )
 		{
-			g_clLncvStorage.WriteLNCV( Address, Value );
+			if(		(LNCV_ADR_VERSION_NUMBER != Address)
+				&&	(LNCV_ADR_ARTIKEL_NUMMER != Address) )
+			{
+				g_clLncvStorage.WriteLNCV( Address, Value );
+
+				if( LNCV_ADR_MODULE_ADDRESS == Address )
+				{
+					g_uiModuleAddress = Value;
+				}
+			}
+
 			retval = LNCV_LACK_OK;
 		}
 		else

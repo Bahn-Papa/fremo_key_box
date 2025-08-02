@@ -19,7 +19,7 @@
 
 
 #define VERSION_MAIN	1
-#define	VERSION_MINOR	4
+#define	VERSION_MINOR	5
 
 #define VERSION_NUMBER		((VERSION_MAIN * 100) + VERSION_MINOR)
 
@@ -27,6 +27,20 @@
 //##########################################################################
 //#
 //#		Version History:
+//#
+//#-------------------------------------------------------------------------
+//#
+//#	Version:	1.5		from: 02.08.2025
+//#
+//#	Implementation:
+//#		my_loconet
+//#		-	change address handling as in other SW like ln2block
+//#
+//#		state_machine
+//#		-	if key is out and button is released then switch off LED
+//#
+//#		io_control
+//#		-	read servo position at init
 //#
 //#-------------------------------------------------------------------------
 //#
@@ -38,7 +52,7 @@
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	Version: 1.3	vom: 13.11.2022
+//#	Version:	1.3		vom: 13.11.2022
 //#
 //#	Implementation:
 //#		-	streamlining lncv_storage
@@ -129,7 +143,12 @@
 //
 //==========================================================================
 
-bool	g_bIsProgMode;
+bool		g_bIsProgMode;
+
+
+#ifdef DEBUGGING_PRINTOUT
+uint32_t	g_ulPrintStatusTimer;
+#endif
 
 
 //==========================================================================
@@ -156,19 +175,15 @@ void setup()
 	g_bIsProgMode = false;
 
 #ifdef DEBUGGING_PRINTOUT
+	g_ulPrintStatusTimer	= 0L;
+
 	g_clDebugging.Init();
-#endif
 
-	g_clControl.Init();
-	g_clMyLoconet.Init();
+	delay( 100 );
 
-	//----	some setup tests  --------------------------------------
-#ifdef DEBUGGING_PRINTOUT
 	g_clDebugging.PrintTitle( VERSION_MAIN, VERSION_MINOR );
 	g_clDebugging.PrintInfoLine( infoLineInit );
 #endif
-
-	delay( 200 );
 
 	//----	LNCV: Check and Init  ----------------------------------
 	g_clLncvStorage.CheckEEPROM( VERSION_NUMBER );
@@ -178,6 +193,20 @@ void setup()
 	g_clLncvStorage.Init();
 
 	delay( 500 );
+
+	//----	I/O control  -------------------------------------------
+	g_clControl.Init();
+
+	delay( 100 );
+
+	//----	loconet  -----------------------------------------------
+	g_clMyLoconet.Init();
+
+	delay( 100 );
+
+	//----	some setup tests  --------------------------------------
+
+	delay( 1000 );
 
 	//----	Prepare Display  ---------------------------------------
 #ifdef DEBUGGING_PRINTOUT
@@ -197,11 +226,13 @@ void loop()
 
 	//==================================================================
 	//	Read Inputs
-	//	-	Loconet messages
 	//	-	Input signals
+	//	-	Loconet messages
 	//
-	g_clMyLoconet.CheckForMessage();
 	g_clControl.ReadInputs();
+
+#if defined( COMMAND_CONNECTION_LOCONET )
+	g_clMyLoconet.CheckForMessage();
 
 
 	//==================================================================
@@ -224,6 +255,7 @@ void loop()
 			g_clControl.LedSlow();
 		}
 	}
+#endif
 
 
 	//==================================================================
@@ -236,11 +268,16 @@ void loop()
 	//	print actual status
 	//
 #ifdef DEBUGGING_PRINTOUT
-	g_clDebugging.PrintStatus(	theState,
-									g_clControl.IsPermissionGranted()
-								||	g_clMyLoconet.IsPermissionGranted(),
-								g_clControl.IsKeyIn(),
-								g_clControl.IsButtonPressed(),
-								g_clControl.IsServoInLockPosition() );
+	if( millis() > g_ulPrintStatusTimer )
+	{
+		g_clDebugging.PrintStatus(	theState,
+										g_clControl.IsPermissionGranted()
+									||	g_clMyLoconet.IsPermissionGranted(),
+									g_clControl.IsKeyIn(),
+									g_clControl.IsButtonPressed(),
+									g_clControl.IsServoInLockPosition() );
+									
+		g_ulPrintStatusTimer = millis() + cg_ulInterval_500_ms;
+	}
 #endif
 }

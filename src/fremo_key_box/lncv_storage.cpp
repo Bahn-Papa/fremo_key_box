@@ -11,6 +11,15 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version:	6		from: 02.08.2025
+//#
+//#	Implementation:
+//#		-	avoid compiler warnings
+//#			changes in function
+//#				CheckEEPROM()
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version:	5		from: 13.11.2022
 //#
 //#	Implementation:
@@ -127,12 +136,11 @@ LncvStorageClass::LncvStorageClass()
 //
 void LncvStorageClass::CheckEEPROM( uint16_t uiVersionNumber )
 {
-	uint8_t		idx;
-	uint16_t	uiVersion;
 	uint16_t	uiAddress	= ReadLNCV( LNCV_ADR_MODULE_ADDRESS );
-	uint16_t	uiArticle	= ReadLNCV( LNCV_ADR_ARTIKEL_NUMMER );
 
 #ifdef DEBUGGING_PRINTOUT
+	uint16_t	uiArticle	= ReadLNCV( LNCV_ADR_ARTIKEL_NUMMER );
+
 	g_clDebugging.PrintStorageCheck( uiAddress, uiArticle );
 #endif
 

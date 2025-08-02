@@ -13,7 +13,17 @@
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 0.04	vom: 28.01.2022
+//#	File version:	5		vom: 02.08.2025
+//#
+//#	Implementation:
+//#		-	read servo position at init
+//#			add new member variables
+//#				m_uiLockPos
+//#				m_uiUnlockPos
+//#
+//#-------------------------------------------------------------------------
+//#
+//#	File version:	4		vom: 28.01.2022
 //#
 //#	Implementation:
 //#		-	change the handling of 'Permission Granted'
@@ -22,7 +32,7 @@
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 0.03	vom: 28.01.2022
+//#	File version:	3		vom: 28.01.2022
 //#
 //#	Implementation:
 //#		-	add function IsPermissionGranted()
@@ -30,14 +40,14 @@
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 0.02	vom: 23.01.2022
+//#	File version:	2		vom: 23.01.2022
 //#
 //#	Implementation:
 //#		-	under development
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 0.01	vom: 21.01.2022
+//#	File version:	1		vom: 21.01.2022
 //#
 //#	Implementation:
 //#		-	first version
@@ -124,9 +134,11 @@ class IO_ControlClass
 		}
 
 	private:
-		bool	m_bLedFast;
-		bool	m_bLedSlow;
-		bool	m_bPermissionGranted;
+		uint16_t	m_uiLockPos;
+		uint16_t	m_uiUnlockPos;
+		bool		m_bLedFast;
+		bool		m_bLedSlow;
+		bool		m_bPermissionGranted;
 };
 
 

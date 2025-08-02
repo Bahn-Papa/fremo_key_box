@@ -9,6 +9,24 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version:	4		from: 02.08.2025
+//#
+//#	Implementation:
+//#		-	change handling of loconet addresses for switch and sensor
+//#			messages. the info will now consists of an address and code part
+//#			add member variables
+//#				m_devKeyState
+//#				m_devPermission
+//#			remove member variables
+//#				m_uiKeyStateAddress
+//#				m_uiPermissionAddress
+//#			add function
+//#				SetDeviceInfo()
+//#			change in function
+//#				LoconetReceived()
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version:	3		from: 28.01.2022
 //#
 //#	Implementation:
@@ -67,6 +85,20 @@
 
 //==========================================================================
 //
+//		T Y P E   D E F I N I T I O N S
+//
+//==========================================================================
+
+typedef struct
+{
+	uint16_t	m_uiAddress;
+	uint8_t		m_bFlags;
+
+} device_t;
+
+
+//==========================================================================
+//
 //		C L A S S   D E F I N I T I O N S
 //
 //==========================================================================
@@ -84,7 +116,7 @@ class MyLoconetClass
 
 		void Init( void );
 		void CheckForMessage( void );
-		void LoconetReceived( uint16_t adr, uint8_t dir );
+		void LoconetReceived( bool isSensor, uint16_t adr, uint8_t dir, uint8_t output );
 		void SendKeyRemoved( bool bRemoved );
 
 		inline void SetProgMode( bool bMode )
@@ -108,11 +140,13 @@ class MyLoconetClass
 		}
 
 	private:
+		device_t	m_devPermission;
+		device_t	m_devKeyState;
 		bool		m_bIsProgMode;
 		bool		m_bPermissionGranted;
-		uint16_t	m_uiPermissionAddress;
-		uint16_t	m_uiKeyStateAddress;
 		uint16_t	m_uiSendDelay;
+
+		void SetDeviceInfo( device_t *pDevice, uint16_t uiInfo );
 };
 
 
