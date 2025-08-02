@@ -19,7 +19,7 @@
 
 
 #define VERSION_MAIN	1
-#define	VERSION_MINOR	5
+#define	VERSION_MINOR	6
 
 #define VERSION_NUMBER		((VERSION_MAIN * 100) + VERSION_MINOR)
 
@@ -27,6 +27,15 @@
 //##########################################################################
 //#
 //#		Version History:
+//#
+//#-------------------------------------------------------------------------
+//#
+//#	Version:	1.6		from: 02.08.2025
+//#
+//#	Implementation:
+//#		lncv_storage
+//#		my_loconet
+//#			add a second LNCV address for the key state
 //#
 //#-------------------------------------------------------------------------
 //#

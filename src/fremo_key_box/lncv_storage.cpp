@@ -11,6 +11,18 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version:	7		from: 02.08.2025
+//#
+//#	Implementation:
+//#		-	add a second LNCV address for the key state
+//#			add new definition
+//#				LNCV_ADR_KEY_STATE_2
+//#			change in functions
+//#				CheckEEPROM()
+//#				IsValidLNCVAddress()
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version:	6		from: 02.08.2025
 //#
 //#	Implementation:
@@ -164,6 +176,7 @@ void LncvStorageClass::CheckEEPROM( uint16_t uiVersionNumber )
 		WriteLNCV( LNCV_ADR_SERVO_UNLOCK_POSITION, SERVO_UNLOCK_POS );
 		WriteLNCV( LNCV_ADR_KEY_PERMISSION, 0 );
 		WriteLNCV( LNCV_ADR_KEY_STATE, 0 );
+		WriteLNCV( LNCV_ADR_KEY_STATE_2, 0 );
 	}
 	else
 	{
@@ -195,7 +208,7 @@ void LncvStorageClass::Init( void )
 //
 bool LncvStorageClass::IsValidLNCVAddress( uint16_t Adresse )
 {
-	if( LNCV_ADR_KEY_STATE >= Adresse )
+	if( LNCV_ADR_KEY_STATE_2 >= Adresse )
 	{
 		return( true );
 	}

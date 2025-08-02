@@ -14,6 +14,15 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version:	6		from: 02.08.2025
+//#
+//#	Implementation:
+//#		-	add a second LNCV address for the key state
+//#			add new definition
+//#				LNCV_ADR_KEY_STATE_2
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version:	5		from: 13.11.2022
 //#
 //#	Implementation:
@@ -102,6 +111,7 @@
 //
 #define	LNCV_ADR_KEY_PERMISSION				7
 #define	LNCV_ADR_KEY_STATE					8
+#define	LNCV_ADR_KEY_STATE_2				9
 
 
 //----------------------------------------------------------------------

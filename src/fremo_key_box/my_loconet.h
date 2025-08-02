@@ -9,6 +9,15 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version:	5		from: 02.08.2025
+//#
+//#	Implementation:
+//#		-	add a second LNCV address for the key state
+//#			add member variable
+//#				m_devKeyState_2
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version:	4		from: 02.08.2025
 //#
 //#	Implementation:
@@ -142,6 +151,7 @@ class MyLoconetClass
 	private:
 		device_t	m_devPermission;
 		device_t	m_devKeyState;
+		device_t	m_devKeyState_2;
 		bool		m_bIsProgMode;
 		bool		m_bPermissionGranted;
 		uint16_t	m_uiSendDelay;

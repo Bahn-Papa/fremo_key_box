@@ -6,6 +6,18 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version:	6		from: 02.08.2025
+//#
+//#	Implementation:
+//#		-	add a second LNCV address for the key state
+//#			add member variable
+//#				m_devKeyState_2
+//#			change in functions
+//#				Init()
+//#				SendKeyRemoved()
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version:	5		from: 02.08.2025
 //#
 //#	Implementation:
@@ -150,6 +162,7 @@ void MyLoconetClass::Init( void )
 
 	SetDeviceInfo( &m_devPermission, g_clLncvStorage.ReadLNCV( LNCV_ADR_KEY_PERMISSION ) );
 	SetDeviceInfo( &m_devKeyState,   g_clLncvStorage.ReadLNCV( LNCV_ADR_KEY_STATE      ) );
+	SetDeviceInfo( &m_devKeyState_2, g_clLncvStorage.ReadLNCV( LNCV_ADR_KEY_STATE_2    ) );
 
 	LocoNet.init( LOCONET_TX_PIN );
 }
@@ -252,60 +265,75 @@ void MyLoconetClass::LoconetReceived( bool isSensor, uint16_t adr, uint8_t dir, 
 //
 void MyLoconetClass::SendKeyRemoved( bool bRemoved )
 {
-	uint16_t	adr		= m_devKeyState.m_uiAddress;
+	device_t *	pDevice;
+	uint16_t	adr		= 0;
 	uint8_t		dir;
 
-	//---------------------------------------------------------
-	//	send the message only if there is an address for it
-	//
-	if( 0 < adr )
+	for( uint8_t idx = 0 ; idx < 2 ; idx++ )
 	{
-		if( bRemoved )
+		if( 0 == idx )
 		{
-			dir = DIR_RED;
+			pDevice = &m_devKeyState;
 		}
 		else
 		{
-			dir = DIR_GREEN;
+			pDevice = &m_devKeyState_2;
 		}
-
-		//-----------------------------------------------------
-		//	Check if 'dir' should be inverted
+		
+		//---------------------------------------------------------
+		//	send the message only if there is an address for it
 		//
-		if( 0 == (m_devKeyState.m_bFlags & DEVICE_IS_INVERT) )
+		adr = pDevice->m_uiAddress;
+		
+		if( 0 < adr )
 		{
-			dir = !dir;
-		}
+			if( bRemoved )
+			{
+				dir = DIR_RED;
+			}
+			else
+			{
+				dir = DIR_GREEN;
+			}
 
-		//-----------------------------------------------------
-		//	Check if this should be a sensor
-		//	or a switch message
-		//
-		if( m_devKeyState.m_bFlags & DEVICE_IS_SENSOR )
-		{
-			//----	sensor message  ------------------------------------
+			//-----------------------------------------------------
+			//	Check if 'dir' should be inverted
 			//
-			LocoNet.reportSensor( adr, dir );
+			if( 0 == (pDevice->m_bFlags & DEVICE_IS_INVERT) )
+			{
+				dir = !dir;
+			}
+
+			//-----------------------------------------------------
+			//	Check if this should be a sensor
+			//	or a switch message
+			//
+			if( pDevice->m_bFlags & DEVICE_IS_SENSOR )
+			{
+				//----	sensor message  ------------------------------------
+				//
+				LocoNet.reportSensor( adr, dir );
 
 #ifdef DEBUGGING_PRINTOUT
-//			g_clDebugging.PrintReportSensorMsg( adr, dir );
+//				g_clDebugging.PrintReportSensorMsg( adr, dir );
 #endif
-		}
-		else
-		{
-			//----	switch message  ---------------------------
-			//
-			LocoNet.requestSwitch( adr, 1, dir );
+			}
+			else
+			{
+				//----	switch message  ---------------------------
+				//
+				LocoNet.requestSwitch( adr, 1, dir );
 
 #ifdef DEBUGGING_PRINTOUT
-//			g_clDebugging.PrintReportSwitchMsg( adr, dir );
+//				g_clDebugging.PrintReportSwitchMsg( adr, dir );
 #endif
 
-			//----	wait befor sending the next message  ------
-			//
-			delay( m_uiSendDelay );
+				//----	wait befor sending the next message  ------
+				//
+				delay( m_uiSendDelay );
 
-			LocoNet.requestSwitch( adr, 0, dir );
+				LocoNet.requestSwitch( adr, 0, dir );
+			}
 		}
 	}
 }
