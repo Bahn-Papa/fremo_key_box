@@ -6,13 +6,29 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version:	5		vom: 05.08.2025
+//#
+//#	Implementation:
+//#		-	add new state STATE_KEY_LOCKED_BOOT
+//#			changes in function
+//#				CheckState()
+//#
+//#	Bug Fix:
+//#		-	handling of LED and permission of key corrected as stated
+//#			in e-mail from Rlaf S.
+//#		-	add use of new 'SendBootStateDelayTime'
+//#			changes in function
+//#				CheckState()
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version:	4		vom: 02.08.2025
 //#
 //#	Bug Fix:
 //#		-	remove the repeatedly sending of key state messages
 //#		-	when key was removed and button released switch off the LED
 //#			changes in function
-//#				CheckState(()
+//#				CheckState()
 //#
 //#-------------------------------------------------------------------------
 //#
@@ -52,6 +68,7 @@
 #include "debugging.h"
 #endif
 
+#include "lncv_storage.h"
 #include "io_control.h"
 #include "my_loconet.h"
 #include "state_machine.h"
@@ -62,8 +79,6 @@
 //		D E F I N I T I O N S
 //
 //==========================================================================
-
-//#define SEND_KEY_STATE_REPEATEDLY		1
 
 
 //==========================================================================
@@ -127,7 +142,18 @@ box_state_t StateMachineClass::CheckState( void )
 		case STATE_POWER_ON:
 			if( g_clControl.IsKeyIn() )
 			{
+				g_clControl.LedOff();
+				g_clControl.SetServoToLockPosition();
+
+				m_ulDelayMillis	= millis() + g_clLncvStorage.GetSendBootStateDelayTime();
+			}
+			else if( (0L < m_ulDelayMillis) && (millis() > m_ulDelayMillis) )
+			{
+				m_ulDelayMillis = 0L;
+
 				m_eState = STATE_KEY_LOCKED;
+
+				g_clMyLoconet.SendKeyRemoved( false );
 			}
 			else
 			{
@@ -136,34 +162,61 @@ box_state_t StateMachineClass::CheckState( void )
 			break;
 
 		//----------------------------------------------------------
-		//	these two states differ only in the flashing speed
-		//	of the LED, so they have been combined.
-		//
-		case STATE_KEY_OUT:
+		case STATE_KEY_LOCKED_BOOT:
+			if( m_eOldState != m_eState )
+			{
+				m_eOldState	= m_eState;
+
+				g_clControl.LedOff();
+				g_clControl.SetServoToLockPosition();
+
+				m_ulDelayMillis	= millis() + g_clLncvStorage.GetSendBootStateDelayTime();
+			}
+			else if( (0L < m_ulDelayMillis) && (millis() > m_ulDelayMillis) )
+			{
+				m_ulDelayMillis = 0L;
+
+				g_clMyLoconet.SendKeyRemoved( false );
+			}
+			else if(	g_clMyLoconet.IsPermissionGranted()
+					||	g_clControl.IsPermissionGranted()	)
+			{
+				m_eState = STATE_PERMISSION_GRANTED;
+			}
+			break;
+
+		//----------------------------------------------------------
 		case STATE_KEY_OUT_BOOT:
 			if( m_eOldState != m_eState )
 			{
 				m_eOldState	= m_eState;
 
-				if( STATE_KEY_OUT_BOOT == m_eState )
-				{
-					g_clControl.LedFast();
-				}
+				g_clControl.LedSlow();
 
-				g_clMyLoconet.SendKeyRemoved( true );
-
-				m_ulDelayMillis	= millis() + cg_ulInterval_2_s;
+				m_ulDelayMillis	= millis() + g_clLncvStorage.GetSendBootStateDelayTime();
 			}
-
-#ifdef SEND_KEY_STATE_REPEATEDLY
-			else if( millis() > m_ulDelayMillis )
+			else if( (0L < m_ulDelayMillis) && (millis() > m_ulDelayMillis) )
 			{
+				m_ulDelayMillis = 0L;
+
 				g_clMyLoconet.SendKeyRemoved( true );
-
-				m_ulDelayMillis = millis() + cg_ulInterval_2_s;
 			}
-#endif
+			else if( g_clControl.IsKeyIn() )
+			{
+				m_eState = STATE_KEY_LOCKED_PRE;
+			}
+			break;
 
+		//----------------------------------------------------------
+		case STATE_KEY_OUT:
+			if( m_eOldState != m_eState )
+			{
+				m_eOldState	= m_eState;
+
+				g_clControl.LedOn();
+
+				g_clMyLoconet.SendKeyRemoved( true );
+			}
 			else if( g_clControl.IsKeyIn() )
 			{
 				m_eState = STATE_KEY_LOCKED_PRE;
@@ -179,8 +232,10 @@ box_state_t StateMachineClass::CheckState( void )
 				m_ulDelayMillis = millis() + cg_ulInterval_500_ms;
 //				m_ulDelayMillis = millis() + cg_ulInterval_2_s;
 			}
-			else if( millis() > m_ulDelayMillis )
+			else if( (0 < m_ulDelayMillis) && (millis() > m_ulDelayMillis) )
 			{
+				m_ulDelayMillis = 0L;
+
 				g_clMyLoconet.SendKeyRemoved( false );
 
 				m_eState = STATE_KEY_LOCKED;
@@ -198,20 +253,7 @@ box_state_t StateMachineClass::CheckState( void )
 
 				g_clControl.LedOff();
 				g_clControl.SetServoToLockPosition();
-//				g_clMyLoconet.SendKeyRemoved( false );
-
-				m_ulDelayMillis = millis() + cg_ulInterval_2_s;
 			}
-
-#ifdef SEND_KEY_STATE_REPEATEDLY
-			else if( millis() > m_ulDelayMillis )
-			{
-				g_clMyLoconet.SendKeyRemoved( false );
-
-				m_ulDelayMillis = millis() + cg_ulInterval_2_s;
-			}
-#endif
-
 			else if(	g_clMyLoconet.IsPermissionGranted()
 					||	g_clControl.IsPermissionGranted()	)
 			{
@@ -244,25 +286,20 @@ box_state_t StateMachineClass::CheckState( void )
 			{
 				m_eOldState = m_eState;
 
-				g_clControl.LedSlow();
-
-				g_clControl.ClearPermission();
-				g_clMyLoconet.ClearPermission();
+				g_clControl.LedOn();
 
 				g_clControl.SetServoToUnlockPosition();
 				g_clMyLoconet.SendKeyRemoved( true );
+			}
+			else if( !g_clControl.IsKeyIn() )
+			{
+				m_eState = STATE_KEY_OUT;
 			}
 			else if( !g_clControl.IsButtonPressed() )
 			{
 				g_clMyLoconet.SendKeyRemoved( false );
 
 				m_eState = STATE_KEY_LOCKED;
-			}
-			else if( !g_clControl.IsKeyIn() )
-			{
-				g_clControl.LedOff();
-
-				m_eState = STATE_KEY_OUT;
 			}
 			break;
 	}

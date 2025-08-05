@@ -14,6 +14,20 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version:	7		from: 05.08.2025
+//#
+//#	Implementation:
+//#		-	add LNCV #10 to configure the delay time for sending the
+//#			state of the key after booting.
+//#			add definition
+//#				LNCV_ADR_SEND_BOOT_STATE_DELAY
+//#			add member variable
+//#				m_uiSendBootStateDelayTime
+//#			add function
+//#				GetSendBootStateDelayTime()
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version:	6		from: 02.08.2025
 //#
 //#	Implementation:
@@ -112,6 +126,7 @@
 #define	LNCV_ADR_KEY_PERMISSION				7
 #define	LNCV_ADR_KEY_STATE					8
 #define	LNCV_ADR_KEY_STATE_2				9
+#define LNCV_ADR_SEND_BOOT_STATE_DELAY		10
 
 
 //----------------------------------------------------------------------
@@ -147,6 +162,12 @@ class LncvStorageClass
 		//
 		void		CheckEEPROM( uint16_t uiVersionNumber );
 		void		Init( void );
+
+		inline uint16_t GetSendBootStateDelayTime( void )
+		{
+			return( m_uiSendBootStateDelayTime );
+		}
+
 		bool		IsValidLNCVAddress( uint16_t Adresse );
 		uint16_t	ReadLNCV(  uint16_t Adresse );
 		void		WriteLNCV( uint16_t Adresse, uint16_t Value );
@@ -154,6 +175,7 @@ class LncvStorageClass
 
 	private:
 //		uint16_t	m_uiConfiguration;
+		uint16_t	m_uiSendBootStateDelayTime;
 };
 
 

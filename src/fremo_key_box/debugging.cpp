@@ -7,6 +7,15 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version:	7		from: 05.08.2025
+//#
+//#	Implementation:
+//#		-	add new state STATE_KEY_LOCKED_BOOT
+//#			change in function
+//#				PrintStatus()
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version:	6		from: 18.11.2023
 //#
 //#	Implementation:
@@ -457,6 +466,10 @@ void DebuggingClass::PrintStatus(	box_state_t	state,
 
 		case STATE_KEY_LOCKED_PRE:
 			g_clDisplay.Print( F( "Locked Pre" ) );
+			break;
+
+		case STATE_KEY_LOCKED_BOOT:
+			g_clDisplay.Print( F( "Lcked Boot" ) );
 			break;
 
 		case STATE_KEY_LOCKED:

@@ -11,6 +11,22 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version:	8		from: 05.08.2025
+//#
+//#	Implementation:
+//#		-	add LNCV #10 to configure the delay time for sending
+//#			state of the key after booting.
+//#			add definition
+//#				LNCV_ADR_SEND_BOOT_STATE_DELAY
+//#			add member variable
+//#				m_uiSendBootStateDelayTime
+//#			change in functions
+//#				Constructor()
+//#				Init()
+//#				CheckEEPROM()
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version:	7		from: 02.08.2025
 //#
 //#	Implementation:
@@ -122,8 +138,9 @@ LncvStorageClass	g_clLncvStorage = LncvStorageClass();
 //----------------------------------------------------------------------
 //	delay times
 //
-#define	MIN_SEND_DELAY_TIME			   5
-#define DEFAULT_SEND_DELAY_TIME		  10
+#define	MIN_SEND_DELAY_TIME						5
+#define DEFAULT_SEND_DELAY_TIME					10
+#define DEFAULT_SEND_BOOT_STATE_DELAY_TIME		2000
 
 
 ////////////////////////////////////////////////////////////////////////
@@ -136,6 +153,7 @@ LncvStorageClass	g_clLncvStorage = LncvStorageClass();
 //
 LncvStorageClass::LncvStorageClass()
 {
+	m_uiSendBootStateDelayTime = 0;
 }
 
 
@@ -177,6 +195,7 @@ void LncvStorageClass::CheckEEPROM( uint16_t uiVersionNumber )
 		WriteLNCV( LNCV_ADR_KEY_PERMISSION, 0 );
 		WriteLNCV( LNCV_ADR_KEY_STATE, 0 );
 		WriteLNCV( LNCV_ADR_KEY_STATE_2, 0 );
+		WriteLNCV( LNCV_ADR_SEND_BOOT_STATE_DELAY, DEFAULT_SEND_BOOT_STATE_DELAY_TIME );
 	}
 	else
 	{
@@ -200,6 +219,13 @@ void LncvStorageClass::Init( void )
 	//	read config information
 	//
 //	m_uiConfiguration		= ReadLNCV( LNCV_ADR_CONFIGURATION );
+
+	m_uiSendBootStateDelayTime = ReadLNCV( LNCV_ADR_SEND_BOOT_STATE_DELAY );
+	
+	if( 0 == m_uiSendBootStateDelayTime )
+	{
+		m_uiSendBootStateDelayTime = DEFAULT_SEND_BOOT_STATE_DELAY_TIME;
+	}
 }
 
 

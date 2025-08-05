@@ -9,14 +9,21 @@
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 0.02	vom: 23.01.2022
+//#	File version:	3		from: 05.08.2025
+//#
+//#	Implementation:
+//#		-	add new state STATE_KEY_LOCKED_BOOT
+//#
+//#-------------------------------------------------------------------------
+//#
+//#	File version:	2		from: 23.01.2022
 //#
 //#	Implementation:
 //#		-	under development
 //#
 //#-------------------------------------------------------------------------
 //#
-//#	File version: 0.01	vom: 21.01.2022
+//#	File version:	1		from: 21.01.2022
 //#
 //#	Implementation:
 //#		-	first version
@@ -46,6 +53,7 @@ typedef enum box_state
 	STATE_KEY_OUT_BOOT,
 	STATE_KEY_OUT,
 	STATE_KEY_LOCKED_PRE,
+	STATE_KEY_LOCKED_BOOT,
 	STATE_KEY_LOCKED,
 	STATE_KEY_UNLOCKED
 

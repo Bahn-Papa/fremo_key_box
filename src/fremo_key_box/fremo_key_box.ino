@@ -19,7 +19,7 @@
 
 
 #define VERSION_MAIN	1
-#define	VERSION_MINOR	6
+#define	VERSION_MINOR	7
 
 #define VERSION_NUMBER		((VERSION_MAIN * 100) + VERSION_MINOR)
 
@@ -27,6 +27,20 @@
 //##########################################################################
 //#
 //#		Version History:
+//#
+//#-------------------------------------------------------------------------
+//#
+//#	Version:	1.7		from: 05.08.2025
+//#
+//#	Bug Fix:
+//#		state_machine.cpp
+//#			handling of permission of key and LED state corrected
+//#			add new state STATE_KEY_LOCKED_BOOT
+//#
+//#	Implementation:
+//#		lncv_storage.h, lncv_storage.cpp
+//#		state_machine.cpp
+//#			add a delay time for sending the boot state of the key
 //#
 //#-------------------------------------------------------------------------
 //#
