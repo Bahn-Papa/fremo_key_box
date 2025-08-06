@@ -9,6 +9,15 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version:	6		from: 06.08.2025
+//#
+//#	Improvement:
+//#		-	improvement of message handling
+//#			change in function
+//#				LoconetReceived()
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version:	5		from: 02.08.2025
 //#
 //#	Implementation:
@@ -125,7 +134,7 @@ class MyLoconetClass
 
 		void Init( void );
 		void CheckForMessage( void );
-		void LoconetReceived( bool isSensor, uint16_t adr, uint8_t dir, uint8_t output );
+		void LoconetReceived( bool isSensor, uint16_t adr, uint8_t dir );
 		void SendKeyRemoved( bool bRemoved );
 
 		inline void SetProgMode( bool bMode )

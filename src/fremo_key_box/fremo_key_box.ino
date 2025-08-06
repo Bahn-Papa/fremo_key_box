@@ -19,7 +19,7 @@
 
 
 #define VERSION_MAIN	1
-#define	VERSION_MINOR	7
+#define	VERSION_MINOR	8
 
 #define VERSION_NUMBER		((VERSION_MAIN * 100) + VERSION_MINOR)
 
@@ -27,6 +27,14 @@
 //##########################################################################
 //#
 //#		Version History:
+//#
+//#-------------------------------------------------------------------------
+//#
+//#	Version:	1.8		from: 06.08.2025
+//#
+//#	Improvement:
+//#		my_loconet.h, my_loconet.cpp
+//#			improvement of message handling
 //#
 //#-------------------------------------------------------------------------
 //#

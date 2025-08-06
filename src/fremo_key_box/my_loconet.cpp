@@ -6,6 +6,16 @@
 //#
 //#-------------------------------------------------------------------------
 //#
+//#	File version:	7		from: 06.08.2025
+//#
+//#	Improvement:
+//#		-	improvement of message handling
+//#			change in function
+//#				LoconetReceived()
+//#				notifySwitchRequest()
+//#
+//#-------------------------------------------------------------------------
+//#
 //#	File version:	6		from: 02.08.2025
 //#
 //#	Implementation:
@@ -102,13 +112,13 @@
 
 #define LOCONET_TX_PIN			7
 
-#define	DIR_RED						0
-#define DIR_THROWN					0
-#define DIR_GREEN					1
-#define DIR_CLOSED					1
+#define	DIR_RED					0
+#define DIR_THROWN				0
+#define DIR_GREEN				1
+#define DIR_CLOSED				1
 
-#define DEVICE_IS_INVERT			0x01
-#define DEVICE_IS_SENSOR			0x02
+#define DEVICE_IS_INVERT		0x01
+#define DEVICE_IS_SENSOR		0x02
 
 
 //==========================================================================
@@ -210,7 +220,7 @@ void MyLoconetClass::CheckForMessage( void )
 //	This is done by checking whether the address of the message
 //	matches the stored address.
 //
-void MyLoconetClass::LoconetReceived( bool isSensor, uint16_t adr, uint8_t dir, uint8_t /* output */ )
+void MyLoconetClass::LoconetReceived( bool isSensor, uint16_t adr, uint8_t dir )
 {
 	bool	bIsGreen	= (dir != DIR_RED);
 
@@ -352,7 +362,7 @@ void MyLoconetClass::SendKeyRemoved( bool bRemoved )
 //
 void notifySensor( uint16_t Address, uint8_t State )
 {
-	g_clMyLoconet.LoconetReceived( true, Address, State, 0 );
+	g_clMyLoconet.LoconetReceived( true, Address, State );
 }
 
 
@@ -362,7 +372,13 @@ void notifySensor( uint16_t Address, uint8_t State )
 //
 void notifySwitchRequest( uint16_t Address, uint8_t Output, uint8_t Direction )
 {
-	g_clMyLoconet.LoconetReceived( false, Address, Direction, Output );
+	//-----------------------------------------------------
+	//	only process one message
+	//
+	if( Output )
+	{
+		g_clMyLoconet.LoconetReceived( false, Address, Direction );
+	}
 }
 
 
